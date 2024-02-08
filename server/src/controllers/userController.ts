@@ -38,7 +38,14 @@ export const signpController = async (req: Request, res: Response) => {
         const accessToken = await generateToken(user._id.toString());
         console.log(user);
 
-        return res.send(accessToken);
+        return res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            pic: user.pic,
+            token: accessToken
+        });
     } catch (error) {
         // console.log(error);
         return res.send((error as Error).message)
@@ -51,8 +58,18 @@ export const loginController = async (req: Request, res: Response) => {
         const user = await User.findOne({ email });
 
         if (!user) return res.send("User does not exists!!");
-        Object.assign(user, { token: generateToken(user._id.toString()) });
-        return res.json(user);
+        if (!bcrypt.compare(password, user.password)) {
+            return res.send("Wrong Password!!");
+        }
+        const token = generateToken(user._id.toString());
+        return res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            pic: user.pic,
+            token: token
+        });
     } catch (error) {
         // console.log(error);
         return res.send((error as Error).message);
