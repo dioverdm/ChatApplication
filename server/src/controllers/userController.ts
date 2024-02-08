@@ -3,28 +3,34 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/generateToken';
+import { v2 as cloudinary } from 'cloudinary';
 
-const signupData = z.object({
+export const signupData = z.object({
     name: z.string().max(50),
     email: z.string().max(100),
     password: z.string().max(50).min(8),
-    pic: z.instanceof(File).optional()
+    pic: z.string().optional()
 })
 
-const loginData=signupData.pick({
-    email:true,
-    password:true
+const loginData = signupData.pick({
+    email: true,
+    password: true
 })
 
 export const signpController = async (req: Request, res: Response) => {
     try {
         const { name, email, password, pic } = signupData.parse(req.body);
-
+        // console.log(pic);
         const present = await User.findOne({ email: email });
 
         const hashPassword = await bcrypt.hash(password, 10);
         if (present) {
             res.send('User already exists!!');
+        }
+        if (pic) {
+            const cloudImg = await cloudinary.uploader.upload(pic!, {
+                folder: "chatApp/Avatar"
+            })
         }
         const user = await User.create({
             name, email, password: hashPassword, pic
@@ -34,19 +40,21 @@ export const signpController = async (req: Request, res: Response) => {
 
         return res.send(accessToken);
     } catch (error) {
+        // console.log(error);
         return res.send((error as Error).message)
     }
 }
 
-export const loginController=async (req:Request,res:Response)=>{
+export const loginController = async (req: Request, res: Response) => {
     try {
-        const {email,password}=loginData.parse(req.body);
-        const user=await User.findOne({email});
+        const { email, password } = loginData.parse(req.body);
+        const user = await User.findOne({ email });
 
-        if(!user) return res.send("User does not exists!!");
-        Object.assign(user,{token:generateToken(user._id.toString())});
+        if (!user) return res.send("User does not exists!!");
+        Object.assign(user, { token: generateToken(user._id.toString()) });
         return res.json(user);
     } catch (error) {
+        // console.log(error);
         return res.send((error as Error).message);
     }
 }

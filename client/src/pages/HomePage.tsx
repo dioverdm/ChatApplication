@@ -4,21 +4,22 @@ import Signup from '../components/Authentication/Signup'
 import Login from '../components/Authentication/Login'
 
 function HomePage() {
-    return <Container maxW="xl" centerContent>
+    return <Container maxW="md" centerContent >
         <Box
             display="flex"
             justifyContent="center"
             p={3}
-            bg="white"
+            bg="#7077A1"
             w="100%"
-            m="40px 0 15px 0"
+            m="20px 0 15px 0"
+            border='5px solid black'
             borderRadius="lg"
             borderWidth="1px"
         >
             <Text fontSize="4xl">Chat App</Text>
         </Box>
-        <Box bg="white" w="100%" p={4} borderRadius="lg" borderWidth="1px">
-            <Tabs variant='soft-rounded' >
+        <Box bg="#7077A1" w="100%" p={4} borderRadius="lg" borderWidth="1px" border='1px solid black'>
+            <Tabs variant='soft-rounded'>
                 <TabList mb='1em'>
                     <Tab width='50%'>Login</Tab>
                     <Tab width='50%'>Sign Up</Tab>
