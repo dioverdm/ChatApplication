@@ -4,6 +4,7 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/generateToken';
 import { v2 as cloudinary } from 'cloudinary';
+import { newRequest } from '../middlewares/authMiddleware';
 
 export const signupData = z.object({
     name: z.string().max(50),
@@ -16,6 +17,24 @@ const loginData = signupData.pick({
     email: true,
     password: true
 })
+
+export const allUsers = async (req: newRequest, res: Response) => {
+    try {
+        const keyword = req.query.search
+            ? {
+                $or: [
+                    { name: { $regex: req.query.search, $options: "i" } },
+                    { email: { $regex: req.query.search, $options: "i" } },
+                ],
+            }
+            : {};
+
+        const users = await User.find(keyword).find({ _id: { $ne: req._id } });
+        return res.send(users);
+    } catch (error) {
+        return res.send((error as Error).message);
+    }
+};
 
 export const signpController = async (req: Request, res: Response) => {
     try {
