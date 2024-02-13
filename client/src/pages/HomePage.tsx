@@ -4,12 +4,17 @@ import Signup from '../components/Authentication/Signup'
 import Login from '../components/Authentication/Login'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { userState } from '../recoil/GlobalStates'
+import { useSetRecoilState } from 'recoil'
+
 
 function HomePage() {
     const navigate = useNavigate();
+    const setUser = useSetRecoilState(userState);
     useEffect(() => {
-        const user = localStorage.getItem("userInfo");
-        if (user) {
+        const User = localStorage.getItem("userInfo");
+        if (User) {
+            setUser(JSON.parse(User!));
             navigate('/chat');
         }
     }, [])

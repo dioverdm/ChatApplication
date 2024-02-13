@@ -1,7 +1,7 @@
 import { Avatar, Box, Text } from '@chakra-ui/react';
 import React, { MouseEventHandler } from 'react'
-import { UserInfo } from '../../context/chatProvider';
-// import { ProfileModalProps } from './profileModal';
+import { UserInfo } from '../../recoil/GlobalStates';
+
 interface props {
     user: UserInfo,
     handleFunction: MouseEventHandler<HTMLDivElement>

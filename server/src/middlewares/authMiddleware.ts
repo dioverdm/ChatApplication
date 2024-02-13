@@ -15,7 +15,7 @@ export interface newRequest extends Request {
 }
 export const authMiddleware = async (req: newRequest, res: Response, next: NextFunction) => {
     try {
-        // console.log(req.headers.authorization);
+        console.log(req.headers.authorization);
         const { authorization } = headerSchema.parse(req.headers);
         // console.log(authorization);
         if (!authorization.startsWith('Bearer')) return res.send('Send token in proper format!!');

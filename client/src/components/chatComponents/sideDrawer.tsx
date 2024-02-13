@@ -1,21 +1,25 @@
 import { BellIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import {
-    Box, Button, Tooltip, Text, Menu, MenuButton, MenuList, MenuGroup,
+    Box, Button, Tooltip, Text, Menu, MenuButton, MenuList, //MenuGroup,
     MenuItem, MenuDivider, Avatar, Drawer, DrawerOverlay, DrawerContent, DrawerCloseButton,
     DrawerHeader, DrawerBody, Input, DrawerFooter, useDisclosure, useToast, Spinner
 } from '@chakra-ui/react';
-import React, { useRef, useState } from 'react'
-import { UserInfo, useChatState } from '../../context/chatProvider';
+import { useRef, useState } from 'react'
 import ProfileModal from './profileModal';
 import { useNavigate } from 'react-router-dom';
 import { axiosClient } from '../../utils/axiosClient';
 import ChatLoading from './ChatLoading';
 import UserListItem from './UserListItem';
+import { selectedChatState, chatsState, userState } from "../../recoil/GlobalStates"
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { UserInfo } from '../../recoil/GlobalStates';
 
 function SideDrawer() {
+    const setSelectedChat = useSetRecoilState(selectedChatState);
+    const user = useRecoilValue(userState);
+    const [chats, setChats] = useRecoilState(chatsState);
 
-    const { user } = useChatState();
-    console.log(user);
+    // console.log(user);
 
 
     // console.log("side-drawer", user!.name);
@@ -32,8 +36,6 @@ function SideDrawer() {
         localStorage.removeItem("userInfo");
         navigate('/');
     }
-
-    const { chats, setChats, setSelectedChat } = useChatState();
     const toast = useToast();
     const handleSearch = async () => {
         if (!search) {
@@ -71,22 +73,24 @@ function SideDrawer() {
         }
     }
 
-    const accessChat = async (user: UserInfo) => {
-        console.log(user);
+    const accessChat = async (usr: UserInfo) => {
+        // console.log(user);
 
         try {
             setLoadingChat(true);
+            // console.log(user);
             const config = {
                 headers: {
                     "Content-type": "application/json",
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axiosClient.post(`/api/chat`, { "_id": user._id }, config);
+            const { data } = await axiosClient.post(`/api/chat`, { "id": usr._id }, config);
 
             //chat with a single person
-            if (!chats.find((c) => { JSON.parse(c)._id === data._id })) setChats!([data!, ...chats]);
-            setSelectedChat!(data);
+            console.log(data);
+            if (!chats.find((c) => { JSON.parse(c)._id === data._id })) setChats!([JSON.stringify(data!), ...chats]);
+            setSelectedChat!(JSON.stringify(data));
             setLoadingChat(false);
             onClose();
         } catch (error) {
@@ -130,7 +134,7 @@ function SideDrawer() {
                     </Menu>
                     <Menu>
                         <MenuButton as={Button} bg="white" rightIcon={<ChevronDownIcon />}>
-                            <Avatar size="sm" cursor="pointer" name={user!.name} src={user!.pic}
+                            <Avatar size="sm" cursor="pointer" src={user!.pic} name={user!.name}
                             />
                         </MenuButton>
                         <MenuList>
@@ -167,7 +171,7 @@ function SideDrawer() {
                         ) : (
                             searchResult?.map((usr) => (
                                 <UserListItem
-                                    key={usr._id}
+                                    key={JSON.stringify(usr._id)}
                                     user={usr}
                                     handleFunction={() => accessChat(usr)}
                                 />

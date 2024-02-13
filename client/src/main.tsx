@@ -4,16 +4,17 @@ import App from './App.tsx'
 import './index.css';
 import { ChakraProvider } from '@chakra-ui/react'
 import { BrowserRouter } from 'react-router-dom'
-import ChatProvider from './context/chatProvider.tsx';
+// import ChatProvider from './context/hello.tsx';
+import { RecoilRoot } from 'recoil';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     // <React.StrictMode>
-    <BrowserRouter>
-        <ChatProvider>
+    <RecoilRoot>
+        <BrowserRouter>
             <ChakraProvider>
                 <App />
             </ChakraProvider>
-        </ChatProvider>
-    </BrowserRouter>
+        </BrowserRouter>
+    </RecoilRoot>
     // </React.StrictMode>,
 )

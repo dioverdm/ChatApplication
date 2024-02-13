@@ -7,30 +7,39 @@ import { getSender } from "../../chatLogics/chatLogic";
 import ChatLoading from "./ChatLoading";
 import GroupChatModal from "./GroupChatModal";
 import { Button } from "@chakra-ui/react";
-import { UserInfo, useChatState } from "../../context/chatProvider";
-
+import { selectedChatState, chatsState, userState } from "../../recoil/GlobalStates"
+// import { UserInfo, useChatState } from "../../context/chatProvider";
+import { UserInfo } from "../../recoil/GlobalStates";
+import { useRecoilState } from "recoil";
+import { axiosClient } from "../../utils/axiosClient";
 interface MyChatsProps {
     fetchAgain: boolean;
 }
 
 const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
+
+    const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
+    const [user, setUser] = useRecoilState(userState);
+
+    const [chats, setChats] = useRecoilState(chatsState);
     const [loggedUser, setLoggedUser] = useState<UserInfo>();
 
-    const { selectedChat, setSelectedChat, user, chats, setChats } = useChatState();
+    // const { selectedChat, setSelectedChat, user, chats, setChats } = useChatState();
 
     const toast = useToast();
 
     const fetchChats = async () => {
         // console.log(user._id);
+        console.log(user.token);
         try {
             const config = {
                 headers: {
-                    Authorization: `Bearer ${user?.token}`,
+                    Authorization: `Bearer ${user.token}`,
                 },
             };
 
-            const { data } = await axios.get("/api/chat", config);
-            setChats!(data);
+            const { data } = await axiosClient.get("/api/chat", config);
+            setChats(prevData => [...prevData, JSON.stringify(data)]);
         } catch (error) {
             toast({
                 title: "Error Occured!",
@@ -92,40 +101,37 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
                 overflowY="hidden"
             >
                 {chats ? (
-                    <Stack overflowY="scroll">
-                        {chats.map((chat) => (
-                            // Parse the chat string once at the beginning
-                            // const chat = JSON.parse(chatString);
-                            <Box
-                                onClick={() => setSelectedChat!(chat)}
-                                cursor="pointer"
-                                bg={selectedChat === chat ? "#38B2AC" : "#E8E8E8"}
-                                color={selectedChat === chat ? "white" : "black"}
-                                px={3}
-                                py={2}
-                                borderRadius="lg"
-                                key={JSON.parse(chat)._id}
-                            >
-                                <Text>
-                                    {!JSON.parse(chat).isGroupChat
-                                        ? getSender(loggedUser!, JSON.parse(chat).users)
-                                        : JSON.parse(chat).chatName}
-                                </Text>
-                                {JSON.parse(chat).latestMessage && (
-                                    <Text fontSize="xs">
-                                        <b>{JSON.parse(chat).latestMessage.sender.name} : </b>
-                                        {JSON.parse(chat).latestMessage.content.length > 50
-                                            ? JSON.parse(chat).latestMessage.content.substring(0, 51) + "..."
-                                            : JSON.parse(chat).latestMessage.content}
+                    <Stack overflowY="scroll" >
+                        {Array.isArray(chats) && chats.map((chat) => {
+                            return (
+                                <Box
+                                    onClick={() => setSelectedChat!(chat)}
+                                    cursor="pointer"
+                                    bg={selectedChat === chat ? "#38B2AC" : "#E8E8E8"}
+                                    color={selectedChat === chat ? "white" : "black"}
+                                    px={3}
+                                    py={2}
+                                    borderRadius="lg"
+                                    key={Math.random()}  // {change it when get chat}
+                                >
+                                    <Text>
+                                        {!JSON.parse(chat).isGroupChat
+                                            ? getSender(loggedUser!, JSON.parse(chat).users)
+                                            : JSON.parse(chat).chatName}
                                     </Text>
-                                )}
-                            </Box>
-                        ))}
+                                    {JSON.parse(chat).latestMessage && (
+                                        <Text fontSize="xs">
+                                            <b>{JSON.parse(chat).latestMessage.sender.name} : </b>
+                                            {JSON.parse(chat).latestMessage.content.length > 50
+                                                ? JSON.parse(chat).latestMessage.content.substring(0, 51) + "..."
+                                                : JSON.parse(chat).latestMessage.content}
+                                        </Text>
+                                    )}
+                                </Box>
+                            )
+                        })}
                     </Stack>
-
-                ) : (
-                    <ChatLoading />
-                )}
+                ) : (<ChatLoading />)}
             </Box>
         </Box>
     );

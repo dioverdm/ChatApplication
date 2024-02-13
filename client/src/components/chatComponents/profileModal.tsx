@@ -1,7 +1,7 @@
 import { ViewIcon } from "@chakra-ui/icons";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, useDisclosure, IconButton, Text, Image, } from "@chakra-ui/react";
-import { UserInfo } from "../../context/chatProvider";
-
+// import { UserInfo } from "../../context/chatProvider";
+import { UserInfo } from "../../recoil/GlobalStates";
 
 
 export interface ProfileModalProps {

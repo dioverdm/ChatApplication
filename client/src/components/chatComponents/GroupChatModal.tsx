@@ -14,11 +14,13 @@ import {
     Box,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { useChatState } from "../../context/chatProvider";
+// import { useChatState } from "../../context/chatProvider";
 import UserBadgeItem from "../UserAvatar/UserBadge";
 import UserListItem from "../UserAvatar/UserListItem";
 import { axiosClient } from "../../utils/axiosClient";
 import mongoose from "mongoose";
+import { chatsState, userState } from "../../recoil/GlobalStates"
+import { useRecoilState, useRecoilValue } from "recoil";
 
 interface GroupChatModalProps {
     children: React.ReactNode;
@@ -36,6 +38,11 @@ export interface UserSchema {
 }
 
 const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
+
+    // const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
+    const user = useRecoilValue(userState);
+    const [chats, setChats] = useRecoilState(chatsState);
+
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [groupChatName, setGroupChatName] = useState<string>();
     const [selectedUsers, setSelectedUsers] = useState<UserSchema[]>();
@@ -43,8 +50,6 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
     const [searchResult, setSearchResult] = useState<UserSchema[]>();
     const [loading, setLoading] = useState<boolean>(false);
     const toast = useToast();
-
-    const { user, chats, setChats } = useChatState();
 
     const handleGroup = (userToAdd: UserSchema) => {
         if (selectedUsers!.includes(userToAdd)) {

@@ -1,7 +1,7 @@
+import { UserInfo } from "../recoil/GlobalStates";
 // export const isSameSenderMargin = (messages, m, i, userId) => {
 //     // console.log(i === messages.length - 1);
 
-import { UserInfo } from "../context/chatProvider";
 
 //     if (
 //         i < messages.length - 1 &&
@@ -41,6 +41,7 @@ import { UserInfo } from "../context/chatProvider";
 // };
 
 export const getSender = (loggedUser: UserInfo, users: any) => {
+    if (!users) return 'lol';
     return users[0]?._id === loggedUser?._id ? users[1].name : users[0].name;
 };
 

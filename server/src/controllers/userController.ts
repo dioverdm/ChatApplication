@@ -55,7 +55,9 @@ export const signpController = async (req: Request, res: Response) => {
             name, email, password: hashPassword, pic
         });
         const accessToken = await generateToken(user._id.toString());
-        console.log(user);
+        // console.log(accessToken);
+        // localStorage.setItem("accessToken", JSON.stringify(accessToken));
+        // console.log(user);
 
         return res.json({
             _id: user._id,

@@ -6,8 +6,8 @@ interface MyChatsProps {
 }
 
 const ChatBox: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
-    setFetchAgain(false);
-    fetchAgain;
+    // setFetchAgain(false);
+    // fetchAgain;
     return (
         <div>chatBox</div>
     )
