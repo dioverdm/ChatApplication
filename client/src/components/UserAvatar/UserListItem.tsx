@@ -1,12 +1,14 @@
 import { Avatar } from "@chakra-ui/avatar";
 import { Box, Text } from "@chakra-ui/layout";
-import { userState } from "../../recoil/GlobalStates";
-import { useRecoilValue } from "recoil";
+// import { userState } from "../../recoil/GlobalStates";
+// import { useRecoilValue } from "recoil";
+import { UserSchema } from "../chatComponents/GroupChatModal";
 interface Props {
+    user:UserSchema;
     handleFunction: () => void;
 }
-const UserListItem: React.FC<Props> = ({ handleFunction }) => {
-    const user = useRecoilValue(userState);
+const UserListItem: React.FC<Props> = ({ user,handleFunction }) => {
+    // const user = useRecoilValue(userState);
 
     return (
         <Box

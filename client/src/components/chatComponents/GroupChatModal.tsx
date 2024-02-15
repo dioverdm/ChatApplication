@@ -14,7 +14,6 @@ import {
     Box,
 } from "@chakra-ui/react";
 import { useState } from "react";
-// import { useChatState } from "../../context/chatProvider";
 import UserBadgeItem from "../UserAvatar/UserBadge";
 import UserListItem from "../UserAvatar/UserListItem";
 import { axiosClient } from "../../utils/axiosClient";
@@ -30,8 +29,9 @@ export interface UserSchema {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
     email: string;
-    password: string;
+    password?: string;
     pic?: string;
+    // users?:UserSchema[];
     isAdmin: boolean;
     createdAt?: Date;
     updatedAt?: Date;
@@ -45,14 +45,15 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [groupChatName, setGroupChatName] = useState<string>();
-    const [selectedUsers, setSelectedUsers] = useState<UserSchema[]>();
+    const [selectedUsers, setSelectedUsers] = useState<UserSchema[]>([]);
     const [search, setSearch] = useState<string>("");
-    const [searchResult, setSearchResult] = useState<UserSchema[]>();
+    const [searchResult, setSearchResult] = useState<UserSchema[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const toast = useToast();
 
     const handleGroup = (userToAdd: UserSchema) => {
-        if (selectedUsers!.includes(userToAdd)) {
+        console.log(userToAdd);
+        if (selectedUsers && selectedUsers.includes(userToAdd)) {
             toast({
                 title: "User already added",
                 status: "warning",
@@ -62,7 +63,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
             });
             return;
         }
-
+        // setArray(oldArray => [...oldArray,newValue] );
         setSelectedUsers([...selectedUsers!, userToAdd]);
     };
 
@@ -117,15 +118,17 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                     Authorization: `Bearer ${user!.token}`,
                 },
             };
+            const users=selectedUsers.map((u) => u._id);
             const { data } = await axiosClient.post(
                 `/api/chat/group`,
                 {
                     name: groupChatName,
-                    users: JSON.stringify(selectedUsers.map((u) => u._id)),
+                    users: JSON.stringify(users),
                 },
                 config
             );
-            setChats!([data, ...chats]);
+            console.log(data);
+            setChats!([JSON.stringify(data), ...chats]);
             onClose();
             toast({
                 title: "New Group Chat Created!",
@@ -180,7 +183,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                         <Box w="100%" display="flex" flexWrap="wrap">
                             {selectedUsers && selectedUsers!.map((u) => (
                                 <UserBadgeItem
-                                    // key={u._id}
+                                    key={JSON.stringify(u._id)}
                                     admin={user!._id}
                                     user={u}
                                     handleFunction={() => handleDelete(u)}
@@ -193,11 +196,11 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                         ) : (
                             searchResult
                                 ?.slice(0, 4)
-                                .map((user) => (
+                                .map((usr) => (
                                     <UserListItem
-                                        // key={user._id}
-                                        // user={user}
-                                        handleFunction={() => handleGroup(user)}
+                                        key={JSON.stringify(usr._id)}
+                                        user={usr}
+                                        handleFunction={() => handleGroup(usr)}
                                     />
                                 ))
                         )}

@@ -1,36 +1,43 @@
 import { AddIcon } from "@chakra-ui/icons";
 import { Box, Stack, Text } from "@chakra-ui/layout";
 import { useToast } from "@chakra-ui/toast";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { getSender } from "../../chatLogics/chatLogic";
 import ChatLoading from "./ChatLoading";
-import GroupChatModal from "./GroupChatModal";
+import GroupChatModal, { UserSchema } from "./GroupChatModal";
 import { Button } from "@chakra-ui/react";
 import { selectedChatState, chatsState, userState } from "../../recoil/GlobalStates"
-// import { UserInfo, useChatState } from "../../context/chatProvider";
 import { UserInfo } from "../../recoil/GlobalStates";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { axiosClient } from "../../utils/axiosClient";
+import mongoose from "mongoose";
+
+
 interface MyChatsProps {
     fetchAgain: boolean;
 }
 
+interface ChatSchema{
+    _id:mongoose.Schema.Types.ObjectId;
+    chatName:string;
+    isGroup:boolean;
+    users?:UserSchema[];
+    latestMessage?:mongoose.Schema.Types.ObjectId;
+    groupAdmin:UserSchema;
+}
 const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
 
     const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
-    const [user, setUser] = useRecoilState(userState);
-
+    const user= useRecoilValue(userState);
     const [chats, setChats] = useRecoilState(chatsState);
     const [loggedUser, setLoggedUser] = useState<UserInfo>();
-
-    // const { selectedChat, setSelectedChat, user, chats, setChats } = useChatState();
-
     const toast = useToast();
-
+    
+    const arr:any=[];
+    chats.map((chat)=>{
+        arr.push(JSON.parse(chat));
+    })
     const fetchChats = async () => {
-        // console.log(user._id);
-        console.log(user.token);
         try {
             const config = {
                 headers: {
@@ -39,7 +46,10 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
             };
 
             const { data } = await axiosClient.get("/api/chat", config);
-            setChats(prevData => [...prevData, JSON.stringify(data)]);
+            console.log(data);
+            data.map((ind:any)=>{
+                setChats(prevData=>[...prevData,JSON.stringify(ind)]);
+            })
         } catch (error) {
             toast({
                 title: "Error Occured!",
@@ -100,36 +110,39 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
                 borderRadius="lg"
                 overflowY="hidden"
             >
+                {/* <Text>I was here</Text> */}
                 {chats ? (
                     <Stack overflowY="scroll" >
-                        {Array.isArray(chats) && chats.map((chat) => {
-                            return (
+                        {(chats).map((temp) => {
+                            const chat:ChatSchema=JSON.parse(temp);
+                            return(
                                 <Box
-                                    onClick={() => setSelectedChat!(chat)}
+                                    onClick={() => setSelectedChat!(JSON.stringify(chat))}
                                     cursor="pointer"
-                                    bg={selectedChat === chat ? "#38B2AC" : "#E8E8E8"}
-                                    color={selectedChat === chat ? "white" : "black"}
+                                    bg={selectedChat === JSON.stringify(chat) ? "#38B2AC" : "#E8E8E8"}
+                                    color={selectedChat === JSON.stringify(chat) ? "white" : "black"}
                                     px={3}
                                     py={2}
                                     borderRadius="lg"
                                     key={Math.random()}  // {change it when get chat}
                                 >
+                                    {/* <Text>{1}</Text> */}
                                     <Text>
-                                        {!JSON.parse(chat).isGroupChat
-                                            ? getSender(loggedUser!, JSON.parse(chat).users)
-                                            : JSON.parse(chat).chatName}
+                                        {!chat.isGroup
+                                            ?getSender(loggedUser!,chat.users!)
+                                            :chat.chatName}
                                     </Text>
-                                    {JSON.parse(chat).latestMessage && (
+                                    {/* {chat.latestMessage && (
                                         <Text fontSize="xs">
-                                            <b>{JSON.parse(chat).latestMessage.sender.name} : </b>
-                                            {JSON.parse(chat).latestMessage.content.length > 50
-                                                ? JSON.parse(chat).latestMessage.content.substring(0, 51) + "..."
-                                                : JSON.parse(chat).latestMessage.content}
+                                            <b>{chat.latestMessage.sender.name} : </b>
+                                            {chat.latestMessage.content.length > 50
+                                                ? chat.latestMessage.content.substring(0, 51) + "..."
+                                                : chat.latestMessage.content}
                                         </Text>
-                                    )}
+                                    )} */}
                                 </Box>
                             )
-                        })}
+                    })}
                     </Stack>
                 ) : (<ChatLoading />)}
             </Box>
