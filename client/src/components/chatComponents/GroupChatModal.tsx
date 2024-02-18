@@ -52,7 +52,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
     const toast = useToast();
 
     const handleGroup = (userToAdd: UserSchema) => {
-        console.log(userToAdd);
+        // console.log(userToAdd);
         if (selectedUsers && selectedUsers.includes(userToAdd)) {
             toast({
                 title: "User already added",
@@ -81,7 +81,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                 },
             };
             const { data } = await axiosClient.get(`/api/auth/user?search=${search}`, config);
-            console.log(data);
+            // console.log(data);
             setLoading(false);
             setSearchResult(data);
         } catch (error) {
@@ -118,7 +118,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                     Authorization: `Bearer ${user!.token}`,
                 },
             };
-            const users=selectedUsers.map((u) => u._id);
+            const users = selectedUsers.map((u) => u._id);
             const { data } = await axiosClient.post(
                 `/api/chat/group`,
                 {
@@ -127,7 +127,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                 },
                 config
             );
-            console.log(data);
+            // console.log(data);
             setChats!([JSON.stringify(data), ...chats]);
             onClose();
             toast({

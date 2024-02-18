@@ -11,18 +11,19 @@ import { UserInfo } from "../../recoil/GlobalStates";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { axiosClient } from "../../utils/axiosClient";
 import mongoose from "mongoose";
+import { messageSchema } from "./ScrollableChat";
 
 
 interface MyChatsProps {
     fetchAgain: boolean;
 }
 
-interface ChatSchema{
+export interface ChatSchema{
     _id:mongoose.Schema.Types.ObjectId;
     chatName:string;
     isGroup:boolean;
     users?:UserSchema[];
-    latestMessage?:mongoose.Schema.Types.ObjectId;
+    latestMessage?:messageSchema;
     groupAdmin:UserSchema;
 }
 const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
@@ -132,14 +133,14 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
                                             ?getSender(loggedUser!,chat.users!)
                                             :chat.chatName}
                                     </Text>
-                                    {/* {chat.latestMessage && (
+                                    {chat.latestMessage && (
                                         <Text fontSize="xs">
-                                            <b>{chat.latestMessage.sender.name} : </b>
+                                            <b>{chat.latestMessage.sender.name===user.name?'You':user.name} : </b>
                                             {chat.latestMessage.content.length > 50
                                                 ? chat.latestMessage.content.substring(0, 51) + "..."
                                                 : chat.latestMessage.content}
                                         </Text>
-                                    )} */}
+                                    )}
                                 </Box>
                             )
                     })}

@@ -58,6 +58,7 @@ export const accessChat = async (req: newRequest, res: Response) => {
 export const fetchChats = async (req: newRequest, res: Response) => {
     try {
         const myid = new mongoose.Types.ObjectId(req._id);
+        // console.log(myid);
         const chat = await Chat.find({ users: { $elemMatch: { $eq: myid } } })
             .populate("users", "-password")
             .populate("groupAdmin", "-password")
@@ -69,6 +70,7 @@ export const fetchChats = async (req: newRequest, res: Response) => {
             select: "name pic email",
         })
 
+        // console.log(result);
         res.status(200).send(result);
     }
     catch (error) {

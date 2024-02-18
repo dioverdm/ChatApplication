@@ -16,20 +16,22 @@ import {
     IconButton,
     Spinner,
 } from "@chakra-ui/react";
-import axios from "axios";
+// import axios from "axios";
 import { useState } from "react";
 import UserBadgeItem from "../UserAvatar/UserBadge";
 import UserListItem from "../UserAvatar/UserListItem";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { UserInfo, selectedChatState, userState } from "../../recoil/GlobalStates";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { UserInfo, chatsState, selectedChatState, userState } from "../../recoil/GlobalStates";
+import { axiosClient } from "../../utils/axiosClient";
 
 interface MyChatsProps {
+    fetchMessages:()=>(void);
     fetchAgain: boolean;
     setFetchAgain: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 
-const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchAgain, setFetchAgain }) => {
+const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain, setFetchAgain }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [groupChatName, setGroupChatName] = useState<string>("");
     const [search, setSearch] = useState<string>("");
@@ -37,7 +39,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchAgain, setFetchAgain
     const [loading, setLoading] = useState(false);
     const [renameloading, setRenameLoading] = useState<boolean>(false);
     const toast = useToast();
-
+    const setChats=useSetRecoilState(chatsState);
     // const { selectedChat, setSelectedChat, user } = ChatState();
     const [selectedChat,setSelectedChat]=useRecoilState(selectedChatState);
     const user=useRecoilValue(userState);
@@ -56,7 +58,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchAgain, setFetchAgain
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.get(`/api/user?search=${search}`, config);
+            const { data } = await axiosClient.get(`/api/user?search=${search}`, config);
             console.log(data);
             setLoading(false);
             setSearchResult(data);
@@ -83,7 +85,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchAgain, setFetchAgain
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.put(
+            const { data } = await axiosClient.put(
                 `/api/chat/rename`,
                 {
                     chatId: JSON.parse(selectedChat)._id,
@@ -141,7 +143,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchAgain, setFetchAgain
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.put(
+            const { data } = await axiosClient.put(
                 `/api/chat/groupadd`,
                 {
                     chatId: JSON.parse(selectedChat)._id,
@@ -186,7 +188,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchAgain, setFetchAgain
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.put(
+            const { data } = await axiosClient.put(
                 `/api/chat/groupremove`,
                 {
                     chatId: JSON.parse(selectedChat)._id,
@@ -196,8 +198,12 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchAgain, setFetchAgain
             );
 
             user1._id === user._id ? setSelectedChat("") : setSelectedChat(data);
+            if(user1._id===user._id)
+            //setting chat so that on the UI we can see the changes
+            setChats(currentChats => currentChats.filter(chat => JSON.parse(chat)._id !== JSON.parse(selectedChat)._id));
+            // setChats(JSON.stringify(data));
             setFetchAgain(!fetchAgain);
-            // fetchMessages();
+            fetchMessages();
             setLoading(false);
         } catch (error) {
             toast({

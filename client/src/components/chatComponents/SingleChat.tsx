@@ -1,23 +1,24 @@
 import { FormControl } from "@chakra-ui/form-control";
 import { Input } from "@chakra-ui/input";
 import { Box, Text } from "@chakra-ui/layout";
-// import "./styles.css";
+import "./style.css";
 import { IconButton, Spinner, useToast } from "@chakra-ui/react";
 import { getSender, getSenderFull } from "../../chatLogics/chatLogic";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { ChangeEvent, ChangeEventHandler, KeyboardEvent, useEffect, useState } from "react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import ProfileModal from "./profileModal";
-// import ScrollableChat from "./ScrollableChat";
+import ScrollableChat from "./ScrollableChat";
 // import Lottie from "react-lottie";
 // import animationData from "../animations/typing.json";
-// import { IconButton } from "@chakra-ui/react";
-// import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import UpdateGroupChatModal from "./UpdateGroupChatModal";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { notificationState, selectedChatState, userState } from "../../recoil/GlobalStates";
-const ENDPOINT = "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
-// var socket, selectedChatCompare;
+import { axiosClient } from "../../utils/axiosClient";
+import { messageSchema } from "./ScrollableChat";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
+const ENDPOINT = "http://localhost:4000";
+var socket: Socket<DefaultEventsMap, DefaultEventsMap>, selectedChatCompare: string;
 
 
 interface MyChatsProps {
@@ -26,14 +27,14 @@ interface MyChatsProps {
 }
 
 const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
-    const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [newMessage, setNewMessage] = useState("");
-    const [socketConnected, setSocketConnected] = useState(false);
-    const [typing, setTyping] = useState(false);
-    const [istyping, setIsTyping] = useState(false);
+    const [messages, setMessages] = useState<messageSchema[]>([]);
+    const [newMessage, setNewMessage] = useState<string>("");
+    const [socketConnected, setSocketConnected] = useState<boolean>(false);
+    const [typing, setTyping] = useState<boolean>(false);
+    const [istyping, setIsTyping] = useState<boolean>(false);
     const toast = useToast();
-
+    // let selectedChatCompare="";
     // const defaultOptions = {
     //     loop: true,
     //     autoplay: true,
@@ -42,11 +43,21 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     //         preserveAspectRatio: "xMidYMid slice",
     //     },
     // };
-    const [selectedChat,setSelectedChat]=useRecoilState(selectedChatState);
-    const user=useRecoilValue(userState);
-    const [notification,setNotification]=useRecoilState(notificationState);
-    // const { selectedChat, setSelectedChat, user, notification, setNotification } =
-    //     ChatState();
+    const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
+    const user = useRecoilValue(userState);
+    const [notification, setNotification] = useRecoilState(notificationState);
+
+    // var socket:Socket<DefaultEventsMap, DefaultEventsMap>;
+    useEffect(() => {
+        socket = io(ENDPOINT);
+        socket.emit("setup", user);
+        socket.on("connected", () => setSocketConnected(true));
+        // socket.on("typing", () => setIsTyping(true));
+        // socket.on("stop typing", () => setIsTyping(false));
+        return () => {
+            socket.close();
+        }
+    }, []);
 
     const fetchMessages = async () => {
         if (!selectedChat) return;
@@ -60,14 +71,14 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
 
             setLoading(true);
 
-            const { data } = await axios.get(
+            const { data } = await axiosClient.get(
                 `/api/message/${JSON.parse(selectedChat)._id}`,
                 config
             );
             setMessages(data);
             setLoading(false);
 
-            // socket.emit("join chat", selectedChat._id);
+            socket.emit("join chat", JSON.parse(selectedChat)._id);
         } catch (error) {
             toast({
                 title: "Error Occured!",
@@ -80,93 +91,84 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
         }
     };
 
-    // const sendMessage = async (event) => {
-    //     if (event.key === "Enter" && newMessage) {
-    //         socket.emit("stop typing", selectedChat._id);
-    //         try {
-    //             const config = {
-    //                 headers: {
-    //                     "Content-type": "application/json",
-    //                     Authorization: `Bearer ${user.token}`,
-    //                 },
-    //             };
-    //             setNewMessage("");
-    //             const { data } = await axios.post(
-    //                 "/api/message",
-    //                 {
-    //                     content: newMessage,
-    //                     chatId: selectedChat,
-    //                 },
-    //                 config
-    //             );
-    //             socket.emit("new message", data);
-    //             setMessages([...messages, data]);
-    //         } catch (error) {
-    //             toast({
-    //                 title: "Error Occured!",
-    //                 description: "Failed to send the Message",
-    //                 status: "error",
-    //                 duration: 5000,
-    //                 isClosable: true,
-    //                 position: "bottom",
-    //             });
-    //         }
-    //     }
-    // };
+    const sendMessage = async (event: KeyboardEvent<HTMLImageElement>) => {
+        if (event.key === "Enter" && newMessage) {
+            // socket.emit("stop typing", selectedChat._id);
+            try {
+                const config = {
+                    headers: {
+                        "Content-type": "application/json",
+                        Authorization: `Bearer ${user.token}`,
+                    },
+                };
+                setNewMessage("");
+                const { data } = await axiosClient.post(
+                    "/api/message/send",
+                    {
+                        content: newMessage,
+                        chatId: JSON.stringify(JSON.parse(selectedChat)._id),
+                    },
+                    config
+                );
+                socket.emit("new message", data);
+                setMessages([...messages, data]);
+            } catch (error) {
+                toast({
+                    title: "Error Occured!",
+                    description: "Failed to send the Message",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "bottom",
+                });
+            }
+        }
+    };
 
-    // useEffect(() => {
-    //     socket = io(ENDPOINT);
-    //     socket.emit("setup", user);
-    //     socket.on("connected", () => setSocketConnected(true));
-    //     socket.on("typing", () => setIsTyping(true));
-    //     socket.on("stop typing", () => setIsTyping(false));
+    useEffect(() => {
+        fetchMessages();
+        selectedChatCompare = selectedChat;
+    }, [selectedChat]);
 
-    //     // eslint-disable-next-line
-    // }, []);
+    useEffect(() => {
+        // console.log("let's see");
+        socket.on("message received", (newMessageRecieved) => {
+            // console.log("control was here");
 
-    // useEffect(() => {
-    //     fetchMessages();
+            if (
+                !selectedChatCompare || // if chat is not selected or doesn't match current chat
+                JSON.parse(selectedChatCompare)._id !== newMessageRecieved.chat._id
+            ) {
+                if (!notification.includes(newMessageRecieved)) {
+                    setNotification([newMessageRecieved, ...notification]);
+                    setFetchAgain(!fetchAgain);
+                }
+            } else {
+                setMessages([...messages, newMessageRecieved]);
+            }
+        });
+    });
 
-    //     selectedChatCompare = selectedChat;
-    //     // eslint-disable-next-line
-    // }, [selectedChat]);
+    const typingHandler = (e: ChangeEvent<HTMLInputElement>) => {
+        setNewMessage((e.target as HTMLInputElement).value);
 
-    // useEffect(() => {
-    //     socket.on("message recieved", (newMessageRecieved) => {
-    //         if (
-    //             !selectedChatCompare || // if chat is not selected or doesn't match current chat
-    //             selectedChatCompare._id !== newMessageRecieved.chat._id
-    //         ) {
-    //             if (!notification.includes(newMessageRecieved)) {
-    //                 setNotification([newMessageRecieved, ...notification]);
-    //                 setFetchAgain(!fetchAgain);
-    //             }
-    //         } else {
-    //             setMessages([...messages, newMessageRecieved]);
-    //         }
-    //     });
-    // });
+        // if (!socketConnected) return;
 
-    // const typingHandler = (e) => {
-    //     setNewMessage(e.target.value);
-
-    //     if (!socketConnected) return;
-
-    //     if (!typing) {
-    //         setTyping(true);
-    //         socket.emit("typing", selectedChat._id);
-    //     }
-    //     let lastTypingTime = new Date().getTime();
-    //     var timerLength = 3000;
-    //     setTimeout(() => {
-    //         var timeNow = new Date().getTime();
-    //         var timeDiff = timeNow - lastTypingTime;
-    //         if (timeDiff >= timerLength && typing) {
-    //             socket.emit("stop typing", selectedChat._id);
-    //             setTyping(false);
-    //         }
-    //     }, timerLength);
-    // };
+        // if (!typing) {
+        //     setTyping(true);
+        //     socket.emit("typing", selectedChat._id);
+        // }
+        // let lastTypingTime = new Date().getTime();
+        // var timerLength = 3000;
+        // setTimeout(() => {
+        //     var timeNow = new Date().getTime();
+        //     var timeDiff = timeNow - lastTypingTime;
+        //     if (timeDiff >= timerLength && typing) {
+        //         socket.emit("stop typing", selectedChat._id);
+        //         setTyping(false);
+        //     }
+        // }, timerLength);
+    };
 
     return (
         <>
@@ -189,7 +191,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                             onClick={() => setSelectedChat("")}
                         />
                         {messages &&
-                            (!JSON.parse(selectedChat).isGroupChat ? (
+                            (!JSON.parse(selectedChat).isGroup ? (
                                 <>
                                     {getSender(user, JSON.parse(selectedChat).users)}
                                     <ProfileModal
@@ -200,7 +202,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                                 <>
                                     {JSON.parse(selectedChat).chatName.toUpperCase()}
                                     <UpdateGroupChatModal
-                                        // fetchMessages={fetchMessages}
+                                        fetchMessages={fetchMessages}
                                         fetchAgain={fetchAgain}
                                         setFetchAgain={setFetchAgain}
                                     />
@@ -218,7 +220,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                         borderRadius="lg"
                         overflowY="hidden"
                     >
-                        {/* {loading ? (
+                        {loading ? (
                             <Spinner
                                 size="xl"
                                 w={20}
@@ -230,14 +232,14 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                             <div className="messages">
                                 <ScrollableChat messages={messages} />
                             </div>
-                        )} */}
+                        )}
 
-                        {/* <FormControl
+                        <FormControl
                             onKeyDown={sendMessage}
                             id="first-name"
                             isRequired
                             mt={3}
-                        > */}
+                        >
                             {/* {istyping ? (
                                 <div>
                                     <Lottie
@@ -250,14 +252,14 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                             ) : (
                                 <></>
                             )} */}
-                            {/* <Input
+                            <Input
                                 variant="filled"
                                 bg="#E0E0E0"
                                 placeholder="Enter a message.."
                                 value={newMessage}
-                                onChange={typingHandler}
+                                onChange={(e) => { typingHandler(e) }}
                             />
-                        </FormControl> */}
+                        </FormControl>
                     </Box>
                 </>
             ) : (
