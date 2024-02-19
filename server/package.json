@@ -25,10 +25,7 @@
     "main": "index.js",
     "scripts": {
         "dev": "nodemon src/index.ts",
-        "build-client": "cd client && npm i && npm run build",
-        "build-server": "tsc",
-        "build": "npm run build-client && npm run build-server",
-        "start": "node dist/index.js"
+        "build": "tsc"
     },
     "author": "",
     "license": "ISC",

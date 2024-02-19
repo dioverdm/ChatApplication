@@ -1,0 +1,18 @@
+{
+    "dependencies": {
+    },
+    "devDependencies": {
+    },
+    "name": "server",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "build-client": "cd client && npm i && npm run build",
+        "build-server": "cd server && npm i && tsc",
+        "build": "npm run build-client && npm run build-server",
+        "start": "node server/dist/index.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "description": ""
+}
