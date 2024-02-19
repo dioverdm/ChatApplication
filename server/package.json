@@ -7,7 +7,9 @@
         "express": "^4.18.2",
         "jsonwebtoken": "^9.0.2",
         "mongoose": "^8.1.1",
+        "path": "^0.12.7",
         "socket.io": "^4.7.4",
+        "url": "^0.11.3",
         "zod": "^3.22.4"
     },
     "devDependencies": {
@@ -22,7 +24,11 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "dev": "nodemon src/index.ts"
+        "dev": "nodemon src/index.ts",
+        "build-client": "cd ../client && npm run build",
+        "build-server": "tsc",
+        "build": "npm run build-client && npm run build-server",
+        "start": "node dist/index.js"
     },
     "author": "",
     "license": "ISC",

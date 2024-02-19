@@ -7,6 +7,8 @@ import { v2 as cloudinary } from 'cloudinary';
 import { createServer } from 'http'; // Import createServer function from http
 import { Server as SocketIO } from 'socket.io'; // Import Server from socket.io
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -29,13 +31,13 @@ app.use(cors({
 }))
 
 app.use('/api', mainRouter);
-app.get('/chat', (req, res) => {
+app.get('/health', (req, res) => {
     res.send("server is running properly");
 })
 
 dbConnect();
 
-const PORT = process.env.PORT || 5001;
+const PORT = (process.env.PORT as unknown as 4000) || 5001;
 const httpServer = createServer(app);
 const io = new SocketIO(httpServer, {
     pingTimeout: 60000,
@@ -81,6 +83,16 @@ io.on('connection', (socket) => {
         // console.log('user disconnected');
     });
 });
+    const dirname = function (){
+        return __dirname;
+    }
+
+    const webappBuildPath = './../../client/dist';
+    app.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
+    app.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+    app.get('*', (_, res) => {
+        res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+    });
 
 httpServer.listen(PORT, () => {
     console.log(`server running on port ${PORT}`);

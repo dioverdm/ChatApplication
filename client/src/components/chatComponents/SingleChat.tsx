@@ -4,7 +4,7 @@ import { Box, Text } from "@chakra-ui/layout";
 import "./style.css";
 import { IconButton, Spinner, useToast } from "@chakra-ui/react";
 import { getSender, getSenderFull } from "../../chatLogics/chatLogic";
-import { ChangeEvent, ChangeEventHandler, KeyboardEvent, useEffect, useState } from "react";
+import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import ProfileModal from "./profileModal";
 import ScrollableChat from "./ScrollableChat";
@@ -31,8 +31,8 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     const [messages, setMessages] = useState<messageSchema[]>([]);
     const [newMessage, setNewMessage] = useState<string>("");
     const [socketConnected, setSocketConnected] = useState<boolean>(false);
-    const [typing, setTyping] = useState<boolean>(false);
-    const [istyping, setIsTyping] = useState<boolean>(false);
+    // const [typing, setTyping] = useState<boolean>(false);
+    // const [istyping, setIsTyping] = useState<boolean>(false);
     const toast = useToast();
     // let selectedChatCompare="";
     // const defaultOptions = {
@@ -152,7 +152,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     const typingHandler = (e: ChangeEvent<HTMLInputElement>) => {
         setNewMessage((e.target as HTMLInputElement).value);
 
-        // if (!socketConnected) return;
+        if (!socketConnected) return;
 
         // if (!typing) {
         //     setTyping(true);

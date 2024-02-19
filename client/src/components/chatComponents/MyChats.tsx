@@ -47,7 +47,7 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
             };
 
             const { data } = await axiosClient.get("/api/chat", config);
-            console.log(data);
+            // console.log(data);
             data.map((ind:any)=>{
                 setChats(prevData=>[...prevData,JSON.stringify(ind)]);
             })
