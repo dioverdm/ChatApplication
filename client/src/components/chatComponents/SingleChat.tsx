@@ -15,7 +15,7 @@ import { notificationState, selectedChatState, userState } from "../../recoil/Gl
 import { axiosClient } from "../../utils/axiosClient";
 import { messageSchema } from "./ScrollableChat";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
-const ENDPOINT = "http://localhost:4000";
+const ENDPOINT = "https://thoughtful-amye-deewan.koyeb.app";
 var socket: Socket<DefaultEventsMap, DefaultEventsMap>, selectedChatCompare: string;
 
 
@@ -119,7 +119,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     }, [selectedChat]);
 
     useEffect(() => {
-        
+
         socket.on("message received", (newMessageRecieved) => {
             if (
                 !selectedChatCompare || // if chat is not selected or doesn't match current chat
@@ -224,7 +224,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                             isRequired
                             mt={3}
                         >
-                            {istyping? <div>typing...</div>:<></>}
+                            {istyping ? <div>typing...</div> : <></>}
                             <Input
                                 variant="filled"
                                 bg="#E0E0E0"
