@@ -1,11 +1,12 @@
 {
-    "dependencies": {},
-    "devDependencies": {},
+    "dependencies": {
+        "tsc": "^2.0.4"
+    },
     "name": "server",
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "install": "cd client && npm i && cd ../server && npm i",
+        "install": "npm i && cd client && npm i && cd ../server && npm i",
         "build-client": "cd client && npm run build",
         "build-server": "cd server && tsc",
         "build": "npm run build-client && npm run build-server",
