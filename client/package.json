@@ -23,7 +23,6 @@
         "react-scrollable-feed": "^2.0.1",
         "recoil": "^0.7.7",
         "socket.io-client": "^4.7.4",
-        "tsc": "^2.0.4",
         "typescript": "^5.3.3"
     },
     "devDependencies": {
