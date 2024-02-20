@@ -9,7 +9,7 @@
     "scripts": {
         "install": "cd client && npm i && cd ../server && npm i",
         "build-client": "cd client && npm run build",
-        "build-server": "cd server && tsc",
+        "build-server": "cd server",
         "build": "npm run build-client && npm run build-server",
         "start": "node server/dist/index.js"
     },
