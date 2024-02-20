@@ -10,24 +10,20 @@ import { useNavigate } from 'react-router-dom';
 import { axiosClient } from '../../utils/axiosClient';
 import ChatLoading from './ChatLoading';
 import UserListItem from './UserListItem';
-import { selectedChatState, chatsState, userState } from "../../recoil/GlobalStates"
+import { selectedChatState, chatsState, userState, notificationState } from "../../recoil/GlobalStates"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { UserInfo } from '../../recoil/GlobalStates';
+// import { getSender } from '../../chatLogics/chatLogic';
 
 function SideDrawer() {
     const setSelectedChat = useSetRecoilState(selectedChatState);
     const user = useRecoilValue(userState);
     const [chats, setChats] = useRecoilState(chatsState);
-
-    // console.log(user);
-
-
-    // console.log("side-drawer", user!.name);
     const [search, setSearch] = useState<string>('');
     const [searchResult, setSearchResult] = useState<UserInfo[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingChat, setLoadingChat] = useState<boolean>();
-
+    const notification = useRecoilValue(notificationState);
     const { isOpen, onOpen, onClose } = useDisclosure()
     const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -88,7 +84,6 @@ function SideDrawer() {
             const { data } = await axiosClient.post(`/api/chat`, { "id": usr._id }, config);
 
             //chat with a single person
-            // console.log(data);
             if (!chats.find((c) => { JSON.parse(c)._id === data._id })) setChats!([JSON.stringify(data!), ...chats]);
             setSelectedChat!(JSON.stringify(data));
             setLoadingChat(false);
@@ -104,7 +99,9 @@ function SideDrawer() {
             });
         }
     };
-
+    // notification.map((notif) => {
+    //     console.log(notif);
+    // })
     return (
         <>
             <Box
@@ -131,6 +128,22 @@ function SideDrawer() {
                         <MenuButton>
                             <BellIcon fontSize='2xl' margin={1} />
                         </MenuButton>
+                        <MenuList>
+                            {!notification.length && "No New Messages"}
+                            {/* {notification.map((notf) => {
+                                const notif = JSON.parse(notf)
+                                console.log(notif);
+                                return (
+                                    <MenuList key={notif._id}>
+                                        {
+                                            notif.chat.isGroup ?
+                                                `New Message in ${notif.chat.chatName}`
+                                                : `New Message from ${getSender(user, notif.chat.users)}`
+                                        }
+                                    </MenuList>
+                                )
+                            })} */}
+                        </MenuList>
                     </Menu>
                     <Menu>
                         <MenuButton as={Button} bg="white" rightIcon={<ChevronDownIcon />}>

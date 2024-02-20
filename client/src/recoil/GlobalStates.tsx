@@ -10,8 +10,6 @@ export interface UserInfo {
     token: string
 }
 
-
-// Define atoms
 export const selectedChatState = atom<string>({
     key: 'selectedChatState',
     default: undefined,
@@ -31,19 +29,3 @@ export const chatsState = atom<string[]>({
     key: 'chatsState',
     default: [],
 });
-
-// Usage in components
-// const YourComponent = () => {
-//     const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
-//     const [user, setUser] = useRecoilState(userState);
-//     const [notification, setNotification] = useRecoilState(notificationState);
-//     const [chats, setChats] = useRecoilState(chatsState);
-
-//     // Alternatively, you can use useSetRecoilState for setters
-//     // const setSelectedChat = useSetRecoilState(selectedChatState);
-//     // const setUser = useSetRecoilState(userState);
-//     // const setNotification = useSetRecoilState(notificationState);
-//     // const setChats = useSetRecoilState(chatsState);
-
-//     // Your component code here
-// };

@@ -18,26 +18,22 @@ interface MyChatsProps {
     fetchAgain: boolean;
 }
 
-export interface ChatSchema{
-    _id:mongoose.Schema.Types.ObjectId;
-    chatName:string;
-    isGroup:boolean;
-    users?:UserSchema[];
-    latestMessage?:messageSchema;
-    groupAdmin:UserSchema;
+export interface ChatSchema {
+    _id: mongoose.Schema.Types.ObjectId;
+    chatName: string;
+    isGroup: boolean;
+    users?: UserSchema[];
+    latestMessage?: messageSchema;
+    groupAdmin: UserSchema;
 }
 const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
 
     const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
-    const user= useRecoilValue(userState);
+    const user = useRecoilValue(userState);
     const [chats, setChats] = useRecoilState(chatsState);
     const [loggedUser, setLoggedUser] = useState<UserInfo>();
     const toast = useToast();
-    
-    const arr:any=[];
-    chats.map((chat)=>{
-        arr.push(JSON.parse(chat));
-    })
+
     const fetchChats = async () => {
         try {
             const config = {
@@ -48,8 +44,8 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
 
             const { data } = await axiosClient.get("/api/chat", config);
             // console.log(data);
-            data.map((ind:any)=>{
-                setChats(prevData=>[...prevData,JSON.stringify(ind)]);
+            data.map((ind: any) => {
+                setChats(prevData => [...prevData, JSON.stringify(ind)]);
             })
         } catch (error) {
             toast({
@@ -115,8 +111,8 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
                 {chats ? (
                     <Stack overflowY="scroll" >
                         {(chats).map((temp) => {
-                            const chat:ChatSchema=JSON.parse(temp);
-                            return(
+                            const chat: ChatSchema = JSON.parse(temp);
+                            return (
                                 <Box
                                     onClick={() => setSelectedChat!(JSON.stringify(chat))}
                                     cursor="pointer"
@@ -130,12 +126,12 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
                                     {/* <Text>{1}</Text> */}
                                     <Text>
                                         {!chat.isGroup
-                                            ?getSender(loggedUser!,chat.users!)
-                                            :chat.chatName}
+                                            ? getSender(loggedUser!, chat.users!)
+                                            : chat.chatName}
                                     </Text>
                                     {chat.latestMessage && (
                                         <Text fontSize="xs">
-                                            <b>{chat.latestMessage.sender.name===user.name?'You':user.name} : </b>
+                                            <b>{chat.latestMessage.sender.name === user.name ? 'You' : user.name} : </b>
                                             {chat.latestMessage.content.length > 50
                                                 ? chat.latestMessage.content.substring(0, 51) + "..."
                                                 : chat.latestMessage.content}
@@ -143,7 +139,7 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
                                     )}
                                 </Box>
                             )
-                    })}
+                        })}
                     </Stack>
                 ) : (<ChatLoading />)}
             </Box>
