@@ -66,6 +66,11 @@ io.on('connection', (socket) => {
         // console.log('user joined room '+room);
     })
 
+    socket.on("typing", (room) =>{
+        socket.to(JSON.stringify(room)).emit("typing")
+    });
+    socket.on("stop typing", (room) => socket.to(JSON.stringify(room)).emit("stop typing"));
+
     socket.on('new message', (newMessageReceived) => {
         // console.log(newMessageReceived);
         const chat = newMessageReceived.chat;

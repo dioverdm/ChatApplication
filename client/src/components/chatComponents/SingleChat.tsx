@@ -8,8 +8,6 @@ import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import ProfileModal from "./profileModal";
 import ScrollableChat from "./ScrollableChat";
-// import Lottie from "react-lottie";
-// import animationData from "../animations/typing.json";
 import io, { Socket } from "socket.io-client";
 import UpdateGroupChatModal from "./UpdateGroupChatModal";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -31,29 +29,19 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     const [messages, setMessages] = useState<messageSchema[]>([]);
     const [newMessage, setNewMessage] = useState<string>("");
     const [socketConnected, setSocketConnected] = useState<boolean>(false);
-    // const [typing, setTyping] = useState<boolean>(false);
-    // const [istyping, setIsTyping] = useState<boolean>(false);
+    const [typing, setTyping] = useState<boolean>(false);
+    const [istyping, setIsTyping] = useState<boolean>(false);
     const toast = useToast();
-    // let selectedChatCompare="";
-    // const defaultOptions = {
-    //     loop: true,
-    //     autoplay: true,
-    //     animationData: animationData,
-    //     rendererSettings: {
-    //         preserveAspectRatio: "xMidYMid slice",
-    //     },
-    // };
     const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
     const user = useRecoilValue(userState);
     const [notification, setNotification] = useRecoilState(notificationState);
 
-    // var socket:Socket<DefaultEventsMap, DefaultEventsMap>;
     useEffect(() => {
         socket = io(ENDPOINT);
         socket.emit("setup", user);
         socket.on("connected", () => setSocketConnected(true));
-        // socket.on("typing", () => setIsTyping(true));
-        // socket.on("stop typing", () => setIsTyping(false));
+        socket.on("typing", () => setIsTyping(true));
+        socket.on("stop typing", () => setIsTyping(false));
         return () => {
             socket.close();
         }
@@ -93,7 +81,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
 
     const sendMessage = async (event: KeyboardEvent<HTMLImageElement>) => {
         if (event.key === "Enter" && newMessage) {
-            // socket.emit("stop typing", selectedChat._id);
+            socket.emit("stop typing", JSON.parse(selectedChat)._id);
             try {
                 const config = {
                     headers: {
@@ -131,10 +119,8 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     }, [selectedChat]);
 
     useEffect(() => {
-        // console.log("let's see");
+        
         socket.on("message received", (newMessageRecieved) => {
-            // console.log("control was here");
-
             if (
                 !selectedChatCompare || // if chat is not selected or doesn't match current chat
                 JSON.parse(selectedChatCompare)._id !== newMessageRecieved.chat._id
@@ -153,23 +139,21 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
         setNewMessage((e.target as HTMLInputElement).value);
 
         if (!socketConnected) return;
-
-        // if (!typing) {
-        //     setTyping(true);
-        //     socket.emit("typing", selectedChat._id);
-        // }
-        // let lastTypingTime = new Date().getTime();
-        // var timerLength = 3000;
-        // setTimeout(() => {
-        //     var timeNow = new Date().getTime();
-        //     var timeDiff = timeNow - lastTypingTime;
-        //     if (timeDiff >= timerLength && typing) {
-        //         socket.emit("stop typing", selectedChat._id);
-        //         setTyping(false);
-        //     }
-        // }, timerLength);
+        if (!typing) {
+            setTyping(true);
+            socket.emit("typing", JSON.parse(selectedChat)._id);
+        }
+        let lastTypingTime = new Date().getTime();
+        let timerLength = 3000;
+        setTimeout(() => {
+            var timeNow = new Date().getTime();
+            var timeDiff = timeNow - lastTypingTime;
+            if (timeDiff >= timerLength && typing) {
+                socket.emit("stop typing", JSON.parse(selectedChat)._id);
+                setTyping(false);
+            }
+        }, timerLength);
     };
-
     return (
         <>
             {selectedChat ? (
@@ -240,18 +224,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                             isRequired
                             mt={3}
                         >
-                            {/* {istyping ? (
-                                <div>
-                                    <Lottie
-                                        options={defaultOptions}
-                                        // height={50}
-                                        width={70}
-                                        style={{ marginBottom: 15, marginLeft: 0 }}
-                                    />
-                                </div>
-                            ) : (
-                                <></>
-                            )} */}
+                            {istyping? <div>typing...</div>:<></>}
                             <Input
                                 variant="filled"
                                 bg="#E0E0E0"
