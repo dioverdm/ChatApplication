@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseURL = 'http://localhost:4000'
+const baseURL = 'https://thoughtful-amye-deewan.koyeb.app'
 
 export const axiosClient = axios.create({
     baseURL,
