@@ -11,9 +11,13 @@
         "build-client": "cd client && npm run build",
         "build-server": "cd server",
         "build": "npm run build-client && npm run build-server",
-        "start": "node server/dist/index.js"
+        "start": "node server/dist/index.js",
+        "both": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\""
     },
     "author": "",
     "license": "ISC",
-    "description": ""
+    "description": "",
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
 }

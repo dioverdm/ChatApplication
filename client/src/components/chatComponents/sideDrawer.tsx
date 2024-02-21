@@ -2,7 +2,7 @@ import { BellIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import {
     Box, Button, Tooltip, Text, Menu, MenuButton, MenuList, //MenuGroup,
     MenuItem, MenuDivider, Avatar, Drawer, DrawerOverlay, DrawerContent, DrawerCloseButton,
-    DrawerHeader, DrawerBody, Input, DrawerFooter, useDisclosure, useToast, Spinner
+    DrawerHeader, DrawerBody, Input, DrawerFooter, useDisclosure, useToast, Spinner, useColorMode, Flex
 } from '@chakra-ui/react';
 import { useRef, useState } from 'react'
 import ProfileModal from './profileModal';
@@ -12,15 +12,17 @@ import ChatLoading from './ChatLoading';
 import UserListItem from './UserListItem';
 import { selectedChatState, chatsState, userState, notificationState } from "../../recoil/GlobalStates"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { UserInfo } from '../../recoil/GlobalStates';
-// import { getSender } from '../../chatLogics/chatLogic';
+import { UserSchema } from './GroupChatModal';
+import { ColorModeToggler } from '../DarkMode/ColorModeToggler';
+import { getSender } from '../../chatLogics/chatLogic';
+import theme from '../DarkMode/theme';
 
 function SideDrawer() {
     const setSelectedChat = useSetRecoilState(selectedChatState);
     const user = useRecoilValue(userState);
     const [chats, setChats] = useRecoilState(chatsState);
     const [search, setSearch] = useState<string>('');
-    const [searchResult, setSearchResult] = useState<UserInfo[]>([]);
+    const [searchResult, setSearchResult] = useState<UserSchema[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingChat, setLoadingChat] = useState<boolean>();
     const notification = useRecoilValue(notificationState);
@@ -37,12 +39,12 @@ function SideDrawer() {
         if (!search) {
             toast({
                 title: 'Please Enter Something in search',
-                // description: "We've created your account for you.",
                 status: 'warning',
                 duration: 5000,
                 isClosable: true,
                 position: 'top-left'
             })
+            return;
         }
         try {
             setLoading(true);
@@ -69,9 +71,21 @@ function SideDrawer() {
         }
     }
 
-    const accessChat = async (usr: UserInfo) => {
-        // console.log(user);
-
+    const accessChat = async (usr: UserSchema) => {
+        for (let chat of chats) {
+            if (chat.chatName === 'sender') {
+                if ((chat.users)![0]._id === usr._id || (chat.users)![1]._id === usr._id) {
+                    toast({
+                        title: 'User is already in chat list',
+                        status: 'warning',
+                        duration: 5000,
+                        isClosable: true,
+                        position: 'top-left'
+                    });
+                    return;
+                }
+            }
+        }
         try {
             setLoadingChat(true);
             // console.log(user);
@@ -84,8 +98,8 @@ function SideDrawer() {
             const { data } = await axiosClient.post(`/api/chat`, { "id": usr._id }, config);
 
             //chat with a single person
-            if (!chats.find((c) => { JSON.parse(c)._id === data._id })) setChats!([JSON.stringify(data!), ...chats]);
-            setSelectedChat!(JSON.stringify(data));
+            if (!chats.find((c) => { c._id === data._id })) setChats!([data!, ...chats]);
+            setSelectedChat!(data);
             setLoadingChat(false);
             onClose();
         } catch (error) {
@@ -99,38 +113,50 @@ function SideDrawer() {
             });
         }
     };
-    // notification.map((notif) => {
-    //     console.log(notif);
-    // })
+    const { colorMode } = useColorMode();
     return (
-        <>
+        <Box>
             <Box
                 display="flex"
                 justifyContent="space-between"
                 alignItems="center"
-                bg="white"
+                bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
                 w="100%"
                 p="5px 10px 5px 10px"
                 borderWidth="5px"
             >
                 <Tooltip label="Search Users to chat" hasArrow placement='bottom-end'>
-                    <Button ref={btnRef} variant='ghost' onClick={onOpen}>
+                    <Button ref={btnRef}
+                        variant='ghost'
+                        onClick={onOpen}
+                        bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.foreground}
+                        _hover={{ bg: "teal.600" }}
+                        _focus={{ boxShadow: "outline" }}
+                    >
                         <i className="fas fa-search"></i>
                         <Text display={{ base: "none", md: 'flex' }} px='4'>
                             Search User
                         </Text>
                     </Button>
                 </Tooltip>
-
-                <Text fontSize='2xl' fontFamily='Work sans'>Chat App</Text>
-                <div>
+                <Text fontSize='2xl' fontFamily='Work sans'>TalkWave</Text>
+                <div
+                    style={{ display: 'flex', justifyContent: 'space-evenly' }}
+                >
                     <Menu>
-                        <MenuButton>
-                            <BellIcon fontSize='2xl' margin={1} />
+                        <MenuButton
+                            _hover={{ bg: "teal.600" }}
+                            _focus={{ boxShadow: "outline" }}
+                            borderRadius={999}
+                            mr={2}
+                        >
+                            <BellIcon
+                                fontSize='2xl' margin={1}
+                            />
                         </MenuButton>
                         <MenuList>
                             {!notification.length && "No New Messages"}
-                            {/* {notification.map((notf) => {
+                            {notification.map((notf) => {
                                 const notif = JSON.parse(notf)
                                 console.log(notif);
                                 return (
@@ -142,20 +168,36 @@ function SideDrawer() {
                                         }
                                     </MenuList>
                                 )
-                            })} */}
+                            })}
                         </MenuList>
                     </Menu>
                     <Menu>
-                        <MenuButton as={Button} bg="white" rightIcon={<ChevronDownIcon />}>
+                        <ColorModeToggler />
+                    </Menu>
+                    <Menu>
+                        <MenuButton as={Button}
+                            bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background} ml={2}
+                            rightIcon={<ChevronDownIcon />}
+                            _hover={{ bg: "teal.600" }}
+                            _focus={{ boxShadow: "outline" }}
+                        >
                             <Avatar size="sm" cursor="pointer" src={user!.pic} name={user!.name}
                             />
                         </MenuButton>
-                        <MenuList>
+                        <MenuList
+                            bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
+                        >
                             <ProfileModal user={user!}>
-                                <MenuItem>My Profile</MenuItem>
+                                <MenuItem bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
+                                    _hover={{ bg: "teal.600" }}
+                                    _focus={{ boxShadow: "outline" }}
+                                >My Profile</MenuItem>
                             </ProfileModal>
                             <MenuDivider />
-                            <MenuItem onClick={logoutHandler}>Logout</MenuItem>
+                            <MenuItem bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
+                                _hover={{ bg: "teal.600" }}
+                                _focus={{ boxShadow: "outline" }}
+                                onClick={logoutHandler}>Logout</MenuItem>
                         </MenuList>
                     </Menu>
                 </div>
@@ -167,7 +209,9 @@ function SideDrawer() {
                 finalFocusRef={btnRef}
             >
                 <DrawerOverlay />
-                <DrawerContent>
+                <DrawerContent
+                    bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
+                >
                     <DrawerCloseButton />
                     <DrawerHeader>Search Users</DrawerHeader>
 
@@ -177,6 +221,7 @@ function SideDrawer() {
                                 mr={2}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
+                                bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background}
                             />
                         </Box>
                         {loading ? (
@@ -189,21 +234,25 @@ function SideDrawer() {
                                     handleFunction={() => accessChat(usr)}
                                 />
                             ))
-                            // <span>results</span>
                         )}
                         {loadingChat && <Spinner ml="auto" display="flex" />}
 
                     </DrawerBody>
 
                     <DrawerFooter>
-                        <Button variant='outline' mr={3} onClick={onClose}>
+                        <Button
+                            variant='outline'
+                            bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background}
+                            _hover={{ bg: "teal.600" }}
+                            _focus={{ boxShadow: "outline" }}
+                            mr={3} onClick={onClose}>
                             Cancel
                         </Button>
                         <Button colorScheme='blue' onClick={handleSearch}>Search</Button>
                     </DrawerFooter>
                 </DrawerContent>
             </Drawer>
-        </>
+        </Box>
     )
 }
 

@@ -8,13 +8,14 @@ import {
     isSameUser,
 } from "../../chatLogics/chatLogic";
 import { useRecoilValue } from "recoil";
-import { UserInfo, userState } from "../../recoil/GlobalStates";
+import { userState } from "../../recoil/GlobalStates";
 import { ChatSchema } from "./MyChats";
 import mongoose from "mongoose";
+import { UserSchema } from "./GroupChatModal";
 
 export interface messageSchema {
     _id: mongoose.Schema.Types.ObjectId;
-    sender: UserInfo;
+    sender: UserSchema;
     content: string;
     chat: ChatSchema;
 }
@@ -24,8 +25,6 @@ interface ScrollableChatProps {
 }
 
 const ScrollableChat: React.FC<ScrollableChatProps> = ({ messages }) => {
-    // const { user } = ChatState();
-    // console.log("scrollable",messages);
     const user = useRecoilValue(userState);
     return (
         <ScrollableFeed>
@@ -47,13 +46,13 @@ const ScrollableChat: React.FC<ScrollableChatProps> = ({ messages }) => {
                             )}
                         <span
                             style={{
-                                backgroundColor: `${m.sender._id === user._id ? "#BEE3F8" : "#B9F5D0"
-                                    }`,
+                                backgroundColor: `${m.sender._id === user._id ? "#BEE3F8" : "#B9F5D0"}`,
                                 marginLeft: isSameSenderMargin(messages, m, i, user._id),
                                 marginTop: isSameUser(messages, m, i) ? 3 : 10,
                                 borderRadius: "20px",
                                 padding: "5px 15px",
                                 maxWidth: "75%",
+                                color: 'black'
                             }}
                         >
                             {m.content}

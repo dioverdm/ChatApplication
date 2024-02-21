@@ -1,12 +1,10 @@
 import { Button } from "@chakra-ui/button";
-import { Input, InputGroup, InputRightElement, VStack, useToast } from '@chakra-ui/react'
+import { Input, InputGroup, InputRightElement, VStack, useColorMode, useToast } from '@chakra-ui/react'
 import { FormControl, FormLabel } from '@chakra-ui/form-control'
 import { useState } from 'react';
-// import { useToast } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom';
-// import axiosCli from "axios";
 import { axiosClient } from "../../utils/axiosClient";
-// import { useNavigate } from "react-router";
+import theme from "../DarkMode/theme";
 
 function Signup() {
     const [show1, setShow1] = useState(false);
@@ -22,7 +20,7 @@ function Signup() {
     const [password, setPassword] = useState<string>('');
     const [pic, setPic] = useState<string>();
     const [picLoading, setPicLoading] = useState<boolean>(false);
-
+    const { colorMode } = useColorMode();
     const submitHandler = async () => {
         setPicLoading(true);
         if (!name || !email || !password || !confirmpassword) {
@@ -161,6 +159,7 @@ function Signup() {
             <Input
                 placeholder="Enter Your Name"
                 onChange={(e) => setName(e.target.value)}
+                bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
             />
         </FormControl>
         <FormControl id="email" isRequired>
@@ -169,6 +168,7 @@ function Signup() {
                 type="email"
                 placeholder="Enter Your Email Address"
                 onChange={(e) => setEmail(e.target.value)}
+                bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
             />
         </FormControl>
         <FormControl id="password" isRequired>
@@ -181,6 +181,7 @@ function Signup() {
                     maxLength={100}
                     id="signupPassword"
                     onChange={(e) => setPassword(e.target.value)}
+                    bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
                 />
                 <InputRightElement width="4.5rem">
                     <Button h="1.75rem" size="sm" onClick={handleClick1}>
@@ -199,6 +200,7 @@ function Signup() {
                     maxLength={100}
                     id="confirmPassword"
                     onChange={(e) => setConfirmpassword(e.target.value)}
+                    bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
                 />
                 <InputRightElement width="4.5rem">
                     <Button h="1.75rem" size="sm" onClick={handleClick2}>
@@ -214,10 +216,6 @@ function Signup() {
                 p={1.5}
                 accept="image/*"
                 onChange={(e) => {
-                    // const files = e.target?.files;
-                    // if (files) {
-                    //     postDetails(files[0]);
-                    // }
                     handleImageChange(e);
                 }
                 }

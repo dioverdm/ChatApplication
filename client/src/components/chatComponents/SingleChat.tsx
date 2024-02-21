@@ -2,10 +2,10 @@ import { FormControl } from "@chakra-ui/form-control";
 import { Input } from "@chakra-ui/input";
 import { Box, Text } from "@chakra-ui/layout";
 import "./style.css";
-import { IconButton, Spinner, useToast } from "@chakra-ui/react";
+import { IconButton, Spinner, useColorMode, useToast } from "@chakra-ui/react";
 import { getSender, getSenderFull } from "../../chatLogics/chatLogic";
 import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
-import { ArrowBackIcon } from "@chakra-ui/icons";
+import { ViewIcon } from "@chakra-ui/icons";
 import ProfileModal from "./profileModal";
 import ScrollableChat from "./ScrollableChat";
 import io, { Socket } from "socket.io-client";
@@ -15,8 +15,10 @@ import { notificationState, selectedChatState, userState } from "../../recoil/Gl
 import { axiosClient } from "../../utils/axiosClient";
 import { messageSchema } from "./ScrollableChat";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
-const ENDPOINT = "https://thoughtful-amye-deewan.koyeb.app";
-var socket: Socket<DefaultEventsMap, DefaultEventsMap>, selectedChatCompare: string;
+import { ChatSchema } from "./MyChats";
+import theme from "../DarkMode/theme";
+const ENDPOINT = import.meta.env.MODE === "development" ? 'http://localhost:4000' : import.meta.env.VITE_SERVER_BASE_URL;
+var socket: Socket<DefaultEventsMap, DefaultEventsMap>, selectedChatCompare: ChatSchema;
 
 
 interface MyChatsProps {
@@ -60,13 +62,13 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
             setLoading(true);
 
             const { data } = await axiosClient.get(
-                `/api/message/${JSON.parse(selectedChat)._id}`,
+                `/api/message/${selectedChat._id}`,
                 config
             );
             setMessages(data);
             setLoading(false);
 
-            socket.emit("join chat", JSON.parse(selectedChat)._id);
+            socket.emit("join chat", selectedChat._id);
         } catch (error) {
             toast({
                 title: "Error Occured!",
@@ -81,7 +83,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
 
     const sendMessage = async (event: KeyboardEvent<HTMLImageElement>) => {
         if (event.key === "Enter" && newMessage) {
-            socket.emit("stop typing", JSON.parse(selectedChat)._id);
+            socket.emit("stop typing", selectedChat._id);
             try {
                 const config = {
                     headers: {
@@ -94,7 +96,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                     "/api/message/send",
                     {
                         content: newMessage,
-                        chatId: JSON.stringify(JSON.parse(selectedChat)._id),
+                        chatId: JSON.stringify(selectedChat._id),
                     },
                     config
                 );
@@ -119,11 +121,10 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     }, [selectedChat]);
 
     useEffect(() => {
-
         socket.on("message received", (newMessageRecieved) => {
             if (
                 !selectedChatCompare || // if chat is not selected or doesn't match current chat
-                JSON.parse(selectedChatCompare)._id !== newMessageRecieved.chat._id
+                selectedChatCompare._id !== newMessageRecieved.chat._id
             ) {
                 if (!notification.includes(newMessageRecieved)) {
                     setNotification([newMessageRecieved, ...notification]);
@@ -141,7 +142,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
         if (!socketConnected) return;
         if (!typing) {
             setTyping(true);
-            socket.emit("typing", JSON.parse(selectedChat)._id);
+            socket.emit("typing", selectedChat._id);
         }
         let lastTypingTime = new Date().getTime();
         let timerLength = 3000;
@@ -149,11 +150,13 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
             var timeNow = new Date().getTime();
             var timeDiff = timeNow - lastTypingTime;
             if (timeDiff >= timerLength && typing) {
-                socket.emit("stop typing", JSON.parse(selectedChat)._id);
+                socket.emit("stop typing", selectedChat._id);
                 setTyping(false);
             }
         }, timerLength);
     };
+
+    const { colorMode } = useColorMode();
     return (
         <>
             {selectedChat ? (
@@ -171,20 +174,22 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                         <IconButton
                             aria-label=""
                             display={{ base: "flex", md: "none" }}
-                            icon={<ArrowBackIcon />}
-                            onClick={() => setSelectedChat("")}
+                            icon={<ViewIcon />}
+                            onClick={() => setSelectedChat({} as ChatSchema)}
+                            _hover={{ bg: "teal.600" }}
+                            _focus={{ boxShadow: "outline" }}
                         />
                         {messages &&
-                            (!JSON.parse(selectedChat).isGroup ? (
+                            (!selectedChat.isGroup ? (
                                 <>
-                                    {getSender(user, JSON.parse(selectedChat).users)}
+                                    {getSender(user, selectedChat.users!)}
                                     <ProfileModal
-                                        user={getSenderFull(user, JSON.parse(selectedChat).users)}
+                                        user={getSenderFull(user, selectedChat.users)}
                                     />
                                 </>
                             ) : (
                                 <>
-                                    {JSON.parse(selectedChat).chatName.toUpperCase()}
+                                    {selectedChat.chatName.toUpperCase()}
                                     <UpdateGroupChatModal
                                         fetchMessages={fetchMessages}
                                         fetchAgain={fetchAgain}
@@ -198,7 +203,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                         flexDir="column"
                         justifyContent="flex-end"
                         p={3}
-                        bg="#E8E8E8"
+                        bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background}
                         w="100%"
                         h="100%"
                         borderRadius="lg"
@@ -227,10 +232,11 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                             {istyping ? <div>typing...</div> : <></>}
                             <Input
                                 variant="filled"
-                                bg="#E0E0E0"
+                                bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.foreground}
                                 placeholder="Enter a message.."
                                 value={newMessage}
                                 onChange={(e) => { typingHandler(e) }}
+                                color={colorMode === 'dark' ? 'white' : 'black'}
                             />
                         </FormControl>
                     </Box>

@@ -3,11 +3,10 @@ import { FormControl, FormLabel } from "@chakra-ui/form-control";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { VStack } from "@chakra-ui/layout";
 import { useState } from "react";
-// import axios from "axios";
-import { useToast } from "@chakra-ui/react";
+import { useColorMode, useToast } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { axiosClient } from "../../utils/axiosClient";
-// import { ChatState } from "../../Context/ChatProvider";
+import theme from "../DarkMode/theme";
 
 const Login = () => {
     const [show, setShow] = useState<boolean>(false);
@@ -18,7 +17,6 @@ const Login = () => {
     const [loading, setLoading] = useState<boolean>(false);
 
     const navigate = useNavigate();
-    // const { setUser } = ChatState();
 
     const submitHandler = async () => {
         setLoading(true);
@@ -80,9 +78,11 @@ const Login = () => {
             setLoading(false);
         }
     };
+    const { colorMode } = useColorMode();
 
     return (
-        <VStack spacing="10px">
+        <VStack
+            spacing="10px">
             <FormControl id="email" isRequired>
                 <FormLabel>Email Address</FormLabel>
                 <Input
@@ -91,6 +91,7 @@ const Login = () => {
                     placeholder="Enter Your Email Address"
                     id="loginEmail"
                     onChange={(e) => setEmail(e.target.value)}
+                    bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
                 />
             </FormControl>
             <FormControl id="password" isRequired>
@@ -101,6 +102,7 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         type={show ? "text" : "password"}
                         placeholder="Enter password"
+                        bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
                     />
                     <InputRightElement width="4.5rem">
                         <Button h="1.75rem" size="sm" onClick={handleClick}>
@@ -117,17 +119,6 @@ const Login = () => {
                 isLoading={loading}
             >
                 Login
-            </Button>
-            <Button
-                variant="solid"
-                colorScheme="red"
-                width="100%"
-                onClick={() => {
-                    setEmail("guest@example.com");
-                    setPassword("123456");
-                }}
-            >
-                Get Guest User Credentials
             </Button>
         </VStack>
     );

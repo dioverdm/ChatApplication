@@ -8,9 +8,8 @@ import { useRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
 
 function ChatPage() {
-    // const { user } = useChatState();
     const [user, setUser] = useRecoilState(userState);
-    const navigate=useNavigate();
+    const navigate = useNavigate();
     useEffect(() => {
         const User = localStorage.getItem("userInfo");
         if (User) {
@@ -18,7 +17,6 @@ function ChatPage() {
             navigate('/chat');
         }
     }, [])
-    // console.log("Entering chat page", user);
     const [fetchAgain, setFetchAgain] = useState<boolean>(false);
     return (
         <div>

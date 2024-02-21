@@ -1,21 +1,13 @@
 import { atom } from 'recoil';
-import mongoose from 'mongoose';
+import { ChatSchema } from '../components/chatComponents/MyChats';
+import { UserSchema } from '../components/chatComponents/GroupChatModal';
 
-export interface UserInfo {
-    _id: mongoose.Schema.Types.ObjectId,
-    name: string,
-    email: string,
-    pic: string,
-    isAdmin: boolean,
-    token: string
-}
-
-export const selectedChatState = atom<string>({
+export const selectedChatState = atom<ChatSchema>({
     key: 'selectedChatState',
     default: undefined,
 });
 
-export const userState = atom<UserInfo>({
+export const userState = atom<UserSchema>({
     key: 'userState',
     default: undefined,
 });
@@ -25,7 +17,7 @@ export const notificationState = atom<string[]>({
     default: [],
 });
 
-export const chatsState = atom<string[]>({
+export const chatsState = atom<ChatSchema[]>({
     key: 'chatsState',
     default: [],
 });

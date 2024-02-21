@@ -15,23 +15,26 @@ import {
     Box,
     IconButton,
     Spinner,
+    useColorMode,
 } from "@chakra-ui/react";
-// import axios from "axios";
 import { useState } from "react";
 import UserBadgeItem from "../UserAvatar/UserBadge";
 import UserListItem from "../UserAvatar/UserListItem";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { UserInfo, chatsState, selectedChatState, userState } from "../../recoil/GlobalStates";
+import { chatsState, selectedChatState, userState } from "../../recoil/GlobalStates";
 import { axiosClient } from "../../utils/axiosClient";
+import { UserSchema } from "./GroupChatModal";
+import { ChatSchema } from "./MyChats";
+import theme from "../DarkMode/theme";
 
 interface MyChatsProps {
-    fetchMessages:()=>(void);
+    fetchMessages: () => (void);
     fetchAgain: boolean;
     setFetchAgain: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 
-const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain, setFetchAgain }) => {
+const UpdateGroupChatModal: React.FC<MyChatsProps> = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [groupChatName, setGroupChatName] = useState<string>("");
     const [search, setSearch] = useState<string>("");
@@ -39,18 +42,21 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
     const [loading, setLoading] = useState(false);
     const [renameloading, setRenameLoading] = useState<boolean>(false);
     const toast = useToast();
-    const setChats=useSetRecoilState(chatsState);
-    // const { selectedChat, setSelectedChat, user } = ChatState();
-    const [selectedChat,setSelectedChat]=useRecoilState(selectedChatState);
-    const user=useRecoilValue(userState);
+    const setChats = useSetRecoilState(chatsState);
+    const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
+    const user = useRecoilValue(userState);
+    const { colorMode } = useColorMode();
 
-
-    const handleSearch = async (query:string) => {
-        setSearch(query);
-        if (!query) {
-            return;
+    const handleSearch = async () => {
+        if (!search) {
+            toast({
+                title: 'Please Enter Something in search',
+                status: 'warning',
+                duration: 5000,
+                isClosable: true,
+                position: 'top-left'
+            })
         }
-
         try {
             setLoading(true);
             const config = {
@@ -58,8 +64,8 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axiosClient.get(`/api/user?search=${search}`, config);
-            console.log(data);
+            const { data } = await axiosClient.get(`/api/auth/user?search=${search}`, config);
+            console.log('data', data);
             setLoading(false);
             setSearchResult(data);
         } catch (error) {
@@ -88,14 +94,13 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
             const { data } = await axiosClient.put(
                 `/api/chat/rename`,
                 {
-                    chatId: JSON.parse(selectedChat)._id,
+                    chatId: selectedChat._id,
                     chatName: groupChatName,
                 },
                 config
             );
 
             console.log(data._id);
-            // setSelectedChat("");
             setSelectedChat(data);
             setFetchAgain(!fetchAgain);
             setRenameLoading(false);
@@ -113,8 +118,9 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
         setGroupChatName("");
     };
 
-    const handleAddUser = async (user1:UserInfo) => {
-        if (JSON.parse(selectedChat).users.find((u:UserInfo) => u._id === user1._id)) {
+    console.log(selectedChat);
+    const handleAddUser = async (user1: UserSchema) => {
+        if (selectedChat && selectedChat.users!.find((u: UserSchema) => u._id === user1._id)) {
             toast({
                 title: "User Already in group!",
                 status: "error",
@@ -125,7 +131,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
             return;
         }
 
-        if (JSON.parse(selectedChat).groupAdmin._id !== user._id) {
+        if (selectedChat.groupAdmin._id !== user._id) {
             toast({
                 title: "Only admins can add someone!",
                 status: "error",
@@ -146,7 +152,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
             const { data } = await axiosClient.put(
                 `/api/chat/groupadd`,
                 {
-                    chatId: JSON.parse(selectedChat)._id,
+                    chatId: selectedChat._id,
                     userId: user1._id,
                 },
                 config
@@ -169,8 +175,8 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
         setGroupChatName("");
     };
 
-    const handleRemove = async (user1:UserInfo) => {
-        if (JSON.parse(selectedChat).groupAdmin._id !== user._id && user1._id !== user._id) {
+    const handleRemove = async (user1: UserSchema) => {
+        if (selectedChat.groupAdmin._id !== user._id && user1._id !== user._id) {
             toast({
                 title: "Only admins can remove someone!",
                 status: "error",
@@ -191,17 +197,15 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
             const { data } = await axiosClient.put(
                 `/api/chat/groupremove`,
                 {
-                    chatId: JSON.parse(selectedChat)._id,
+                    chatId: selectedChat._id,
                     userId: user1._id,
                 },
                 config
             );
 
-            user1._id === user._id ? setSelectedChat("") : setSelectedChat(data);
-            if(user1._id===user._id)
-            //setting chat so that on the UI we can see the changes
-            setChats(currentChats => currentChats.filter(chat => JSON.parse(chat)._id !== JSON.parse(selectedChat)._id));
-            // setChats(JSON.stringify(data));
+            user1._id === user._id ? setSelectedChat({} as ChatSchema) : setSelectedChat(data);
+            if (user1._id === user._id)
+                setChats(currentChats => currentChats.filter(chat => chat._id !== selectedChat._id));
             setFetchAgain(!fetchAgain);
             fetchMessages();
             setLoading(false);
@@ -221,28 +225,38 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
 
     return (
         <>
-            <IconButton aria-label="" display={{ base: "flex" }} icon={<ViewIcon />} onClick={onOpen} />
+            <IconButton aria-label=""
+                display={{ base: "flex" }}
+                icon={<ViewIcon />}
+                onClick={onOpen}
+                _hover={{ bg: "teal.600" }}
+                _focus={{ boxShadow: "outline" }}
+            />
 
             <Modal onClose={onClose} isOpen={isOpen} isCentered>
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent
+                    bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background}
+                >
                     <ModalHeader
                         fontSize="35px"
                         fontFamily="Work sans"
                         display="flex"
                         justifyContent="center"
+                        bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background}
                     >
-                        {JSON.parse(selectedChat).chatName}
+                        {selectedChat.chatName}
                     </ModalHeader>
 
                     <ModalCloseButton />
-                    <ModalBody display="flex" flexDir="column" alignItems="center">
+                    <ModalBody display="flex" //bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background}
+                        flexDir="column" alignItems="center">
                         <Box w="100%" display="flex" flexWrap="wrap" pb={3}>
-                            {JSON.parse(selectedChat).users.map((u:UserInfo) => (
+                            {selectedChat.users!.map((u: UserSchema) => (
                                 <UserBadgeItem
                                     key={JSON.stringify(u._id)}
                                     user={u}
-                                    admin={JSON.parse(selectedChat).groupAdmin}
+                                    admin={selectedChat.groupAdmin}
                                     handleFunction={() => handleRemove(u)}
                                 />
                             ))}
@@ -253,6 +267,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
                                 mb={3}
                                 value={groupChatName}
                                 onChange={(e) => setGroupChatName(e.target.value)}
+                                bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
                             />
                             <Button
                                 variant="solid"
@@ -264,18 +279,20 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({fetchMessages,fetchAgain,
                                 Update
                             </Button>
                         </FormControl>
-                        <FormControl>
+                        <FormControl display='flex'>
                             <Input
                                 placeholder="Add User to group"
                                 mb={1}
-                                onChange={(e) => handleSearch(e.target.value)}
+                                bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
+                                onChange={(e) => setSearch(e.target.value)}
                             />
+                            <Button colorScheme='teal' ml={1} onClick={handleSearch} >Search</Button>
                         </FormControl>
 
                         {loading ? (
                             <Spinner size="lg" />
                         ) : (
-                            searchResult?.map((user:UserInfo) => (
+                            searchResult?.map((user: UserSchema) => (
                                 <UserListItem
                                     key={JSON.stringify(user._id)}
                                     user={user}

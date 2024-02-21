@@ -30,6 +30,7 @@ export const allUsers = async (req: newRequest, res: Response) => {
             : {};
 
         const users = await User.find(keyword).find({ _id: { $ne: req._id } });
+        console.log(users);
         return res.send(users);
     } catch (error) {
         return res.send((error as Error).message);
@@ -55,9 +56,6 @@ export const signpController = async (req: Request, res: Response) => {
             name, email, password: hashPassword, pic
         });
         const accessToken = await generateToken(user._id.toString());
-        // console.log(accessToken);
-        // localStorage.setItem("accessToken", JSON.stringify(accessToken));
-        // console.log(user);
 
         return res.json({
             _id: user._id,
@@ -68,7 +66,7 @@ export const signpController = async (req: Request, res: Response) => {
             token: accessToken
         });
     } catch (error) {
-        // console.log(error);
+        console.log(error);
         return res.send((error as Error).message)
     }
 }

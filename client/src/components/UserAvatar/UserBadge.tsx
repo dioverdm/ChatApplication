@@ -1,13 +1,12 @@
 import { CloseIcon } from "@chakra-ui/icons";
 import { Badge } from "@chakra-ui/layout";
 import { UserSchema } from "../chatComponents/GroupChatModal";
-import mongoose from "mongoose";
 import React from "react";
 
 interface Props {
     user: UserSchema;
     handleFunction: () => void;
-    admin: mongoose.Schema.Types.ObjectId;
+    admin: UserSchema;
 }
 
 const UserBadgeItem: React.FC<Props> = ({ user, handleFunction, admin }) => {
@@ -25,7 +24,7 @@ const UserBadgeItem: React.FC<Props> = ({ user, handleFunction, admin }) => {
             onClick={handleFunction}
         >
             {user.name}
-            {admin === user._id && <span> (Admin)</span>}
+            {admin._id === user._id && <span> (Admin)</span>}
             <CloseIcon pl={1} />
         </Badge>
     );

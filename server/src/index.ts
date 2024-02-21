@@ -9,6 +9,7 @@ import { Server as SocketIO } from 'socket.io'; // Import Server from socket.io
 import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import morgan from 'morgan';
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ const app = express();
 const origin = 'http://localhost:5173';
 
 //Middlewares
-
+app.use(morgan('common'));
 app.use(express.json({ limit: '10mb' }));
 
 app.use(cors({
@@ -66,7 +67,7 @@ io.on('connection', (socket) => {
         // console.log('user joined room '+room);
     })
 
-    socket.on("typing", (room) =>{
+    socket.on("typing", (room) => {
         socket.to(JSON.stringify(room)).emit("typing")
     });
     socket.on("stop typing", (room) => socket.to(JSON.stringify(room)).emit("stop typing"));
@@ -88,16 +89,16 @@ io.on('connection', (socket) => {
         // console.log('user disconnected');
     });
 });
-    const dirname = function (){
-        return __dirname;
-    }
+// const dirname = function (){
+//     return __dirname;
+// }
 
-    const webappBuildPath = './../../client/dist';
-    app.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
-    app.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
-    app.get('*', (_, res) => {
-        res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
-    });
+// const webappBuildPath = './../../client/dist';
+// app.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
+// app.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+// app.get('*', (_, res) => {
+//     res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+// });
 
 httpServer.listen(PORT, () => {
     console.log(`server running on port ${PORT}`);

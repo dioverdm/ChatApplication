@@ -31,15 +31,15 @@ export interface UserSchema {
     email: string;
     password?: string;
     pic?: string;
-    // users?:UserSchema[];
+    users?: UserSchema[];
     isAdmin: boolean;
     createdAt?: Date;
     updatedAt?: Date;
+    token?: string;
 }
 
 const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
 
-    // const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
     const user = useRecoilValue(userState);
     const [chats, setChats] = useRecoilState(chatsState);
 
@@ -52,7 +52,6 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
     const toast = useToast();
 
     const handleGroup = (userToAdd: UserSchema) => {
-        // console.log(userToAdd);
         if (selectedUsers && selectedUsers.includes(userToAdd)) {
             toast({
                 title: "User already added",
@@ -63,7 +62,6 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
             });
             return;
         }
-        // setArray(oldArray => [...oldArray,newValue] );
         setSelectedUsers([...selectedUsers!, userToAdd]);
     };
 
@@ -81,7 +79,6 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                 },
             };
             const { data } = await axiosClient.get(`/api/auth/user?search=${search}`, config);
-            // console.log(data);
             setLoading(false);
             setSearchResult(data);
         } catch (error) {
@@ -128,7 +125,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                 config
             );
             // console.log(data);
-            setChats!([JSON.stringify(data), ...chats]);
+            setChats!([data, ...chats]);
             onClose();
             toast({
                 title: "New Group Chat Created!",
@@ -184,7 +181,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
                             {selectedUsers && selectedUsers!.map((u) => (
                                 <UserBadgeItem
                                     key={JSON.stringify(u._id)}
-                                    admin={user!._id}
+                                    admin={user}
                                     user={u}
                                     handleFunction={() => handleDelete(u)}
                                 />

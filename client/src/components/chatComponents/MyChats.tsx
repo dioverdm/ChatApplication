@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import { getSender } from "../../chatLogics/chatLogic";
 import ChatLoading from "./ChatLoading";
 import GroupChatModal, { UserSchema } from "./GroupChatModal";
-import { Button } from "@chakra-ui/react";
-import { selectedChatState, chatsState, userState } from "../../recoil/GlobalStates"
-import { UserInfo } from "../../recoil/GlobalStates";
+import { Button, background, useColorMode } from "@chakra-ui/react";
+import { selectedChatState, chatsState, userState } from "../../recoil/GlobalStates";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { axiosClient } from "../../utils/axiosClient";
 import mongoose from "mongoose";
 import { messageSchema } from "./ScrollableChat";
+import theme from "../DarkMode/theme";
 
 
 interface MyChatsProps {
@@ -25,13 +25,14 @@ export interface ChatSchema {
     users?: UserSchema[];
     latestMessage?: messageSchema;
     groupAdmin: UserSchema;
+    token?: string;
 }
 const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
 
     const [selectedChat, setSelectedChat] = useRecoilState(selectedChatState);
     const user = useRecoilValue(userState);
     const [chats, setChats] = useRecoilState(chatsState);
-    const [loggedUser, setLoggedUser] = useState<UserInfo>();
+    const [loggedUser, setLoggedUser] = useState<UserSchema>();
     const toast = useToast();
 
     const fetchChats = async () => {
@@ -43,10 +44,8 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
             };
 
             const { data } = await axiosClient.get("/api/chat", config);
-            // console.log(data);
-            data.map((ind: any) => {
-                setChats(prevData => [...prevData, JSON.stringify(ind)]);
-            })
+            console.log('mychat', data);
+            setChats(data);
         } catch (error) {
             toast({
                 title: "Error Occured!",
@@ -62,8 +61,9 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
     useEffect(() => {
         setLoggedUser(JSON.parse(localStorage.getItem("userInfo")!));
         fetchChats();
-        // eslint-disable-next-line
-    }, [fetchAgain]);
+    }, []);
+
+    const { colorMode } = useColorMode();
 
     return (
         <Box
@@ -71,7 +71,7 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
             flexDir="column"
             alignItems="center"
             p={3}
-            bg="white"
+            bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
             w={{ base: "100%", md: "31%" }}
             borderRadius="lg"
             borderWidth="1px"
@@ -92,6 +92,9 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
                         display="flex"
                         fontSize={{ base: "17px", md: "10px", lg: "17px" }}
                         rightIcon={<AddIcon />}
+                        bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.foreground}
+                        _hover={{ bg: "teal.600" }}
+                        _focus={{ boxShadow: "outline" }}
                     >
                         New Group Chat
                     </Button>
@@ -101,29 +104,29 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
                 display="flex"
                 flexDir="column"
                 p={3}
-                bg="#F8F8F8"
+                bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background}
                 w="100%"
                 h="100%"
                 borderRadius="lg"
                 overflowY="hidden"
             >
-                {/* <Text>I was here</Text> */}
                 {chats ? (
                     <Stack overflowY="scroll" >
-                        {(chats).map((temp) => {
-                            const chat: ChatSchema = JSON.parse(temp);
+                        {(chats).map((chat) => {
                             return (
                                 <Box
-                                    onClick={() => setSelectedChat!(JSON.stringify(chat))}
+                                    onClick={() => setSelectedChat!(chat)}
                                     cursor="pointer"
-                                    bg={selectedChat === JSON.stringify(chat) ? "#38B2AC" : "#E8E8E8"}
-                                    color={selectedChat === JSON.stringify(chat) ? "white" : "black"}
+                                    backgroundColor={selectedChat === chat ? "#38B2AC" : "#E8E8E8"}
+                                    color={colorMode === 'dark' ? "white" : 'black'}
                                     px={3}
                                     py={2}
                                     borderRadius="lg"
-                                    key={Math.random()}  // {change it when get chat}
+                                    _hover={{ bg: "teal.600" }}
+                                    _focus={{ boxShadow: "outline" }}
+                                    bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.foreground}
+                                    key={JSON.stringify(chat._id)}
                                 >
-                                    {/* <Text>{1}</Text> */}
                                     <Text>
                                         {!chat.isGroup
                                             ? getSender(loggedUser!, chat.users!)
