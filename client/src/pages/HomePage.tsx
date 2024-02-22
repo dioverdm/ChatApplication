@@ -12,7 +12,7 @@ import theme from '../components/DarkMode/theme'
 function HomePage() {
     const navigate = useNavigate();
     const setUser = useSetRecoilState(userState);
-    const {colorMode}=useColorMode();
+    const { colorMode } = useColorMode();
     useEffect(() => {
         const User = localStorage.getItem("userInfo");
         if (User) {
@@ -20,10 +20,10 @@ function HomePage() {
             navigate('/chat');
         }
     }, [])
-    return <Container maxW="md"  centerContent>
-        <ColorModeToggler/>
+    return <Container maxW="md" centerContent>
+        <ColorModeToggler />
         <Box
-            display="flex" 
+            display="flex"
             justifyContent="center"
             p={3}
             bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.foreground}
@@ -36,7 +36,7 @@ function HomePage() {
             <Text fontSize="4xl">Chat App</Text>
         </Box>
         <Box bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.foreground}
-        w="100%" p={4} borderRadius="lg" borderWidth="1px" border='1px solid #7359f8'>
+            w="100%" p={4} borderRadius="lg" borderWidth="1px" border='1px solid #7359f8'>
             <Tabs variant='soft-rounded'>
                 <TabList mb='1em'>
                     <Tab width='50%' border='1px solid #7359f8'>Login</Tab>

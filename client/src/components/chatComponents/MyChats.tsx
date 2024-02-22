@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { getSender } from "../../chatLogics/chatLogic";
 import ChatLoading from "./ChatLoading";
 import GroupChatModal, { UserSchema } from "./GroupChatModal";
-import { Button, background, useColorMode } from "@chakra-ui/react";
+import { Button, useColorMode } from "@chakra-ui/react";
 import { selectedChatState, chatsState, userState } from "../../recoil/GlobalStates";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { axiosClient } from "../../utils/axiosClient";
@@ -61,13 +61,14 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
     useEffect(() => {
         setLoggedUser(JSON.parse(localStorage.getItem("userInfo")!));
         fetchChats();
-    }, []);
+    }, [fetchAgain]);
 
+    console.log('selected chat from my chats', selectedChat);
     const { colorMode } = useColorMode();
 
     return (
         <Box
-            display={{ base: selectedChat ? "none" : "flex", md: "flex" }}
+            display={{ base: selectedChat && Object.keys(selectedChat).length !== 0 ? "none" : "flex", md: "flex" }}
             flexDir="column"
             alignItems="center"
             p={3}

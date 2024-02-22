@@ -15,7 +15,7 @@ const ChatBox: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     const { colorMode } = useColorMode();
     return (
         <Box
-            display={{ base: selectedChat ? "flex" : "none", md: "flex" }}
+            display={{ base: selectedChat && Object.keys(selectedChat).length !== 0 ? "flex" : "none", md: "flex" }}
             alignItems="center"
             flexDir="column"
             p={3}

@@ -13,6 +13,7 @@ export interface ProfileModalProps {
 const ProfileModal: React.FC<ProfileModalProps> = ({ user, children }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { colorMode } = useColorMode();
+    if (!user) return;
     return (
         <>
             {children ? (

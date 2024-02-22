@@ -5,7 +5,7 @@ import "./style.css";
 import { IconButton, Spinner, useColorMode, useToast } from "@chakra-ui/react";
 import { getSender, getSenderFull } from "../../chatLogics/chatLogic";
 import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
-import { ViewIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon } from "@chakra-ui/icons";
 import ProfileModal from "./profileModal";
 import ScrollableChat from "./ScrollableChat";
 import io, { Socket } from "socket.io-client";
@@ -50,7 +50,8 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     }, []);
 
     const fetchMessages = async () => {
-        if (!selectedChat) return;
+        console.log(selectedChat);
+        if (!selectedChat || Object.keys(selectedChat).length === 0) return;
 
         try {
             const config = {
@@ -122,6 +123,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
 
     useEffect(() => {
         socket.on("message received", (newMessageRecieved) => {
+            console.log(newMessageRecieved);
             if (
                 !selectedChatCompare || // if chat is not selected or doesn't match current chat
                 selectedChatCompare._id !== newMessageRecieved.chat._id
@@ -174,22 +176,22 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
                         <IconButton
                             aria-label=""
                             display={{ base: "flex", md: "none" }}
-                            icon={<ViewIcon />}
+                            icon={<ArrowBackIcon />}
                             onClick={() => setSelectedChat({} as ChatSchema)}
                             _hover={{ bg: "teal.600" }}
                             _focus={{ boxShadow: "outline" }}
                         />
-                        {messages &&
+                        {messages && selectedChat && Object.keys(selectedChat).length !== 0 &&
                             (!selectedChat.isGroup ? (
                                 <>
                                     {getSender(user, selectedChat.users!)}
                                     <ProfileModal
-                                        user={getSenderFull(user, selectedChat.users)}
+                                        user={getSenderFull(user, selectedChat.users!)}
                                     />
                                 </>
                             ) : (
                                 <>
-                                    {selectedChat.chatName.toUpperCase()}
+                                    {selectedChat.chatName?.toUpperCase()}
                                     <UpdateGroupChatModal
                                         fetchMessages={fetchMessages}
                                         fetchAgain={fetchAgain}

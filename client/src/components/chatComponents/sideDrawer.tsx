@@ -1,8 +1,8 @@
 import { BellIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import {
-    Box, Button, Tooltip, Text, Menu, MenuButton, MenuList, //MenuGroup,
+    Box, Button, Tooltip, Text, Menu, MenuButton, MenuList,
     MenuItem, MenuDivider, Avatar, Drawer, DrawerOverlay, DrawerContent, DrawerCloseButton,
-    DrawerHeader, DrawerBody, Input, DrawerFooter, useDisclosure, useToast, Spinner, useColorMode, Flex
+    DrawerHeader, DrawerBody, Input, DrawerFooter, useDisclosure, useToast, Spinner, useColorMode, Badge, Flex
 } from '@chakra-ui/react';
 import { useRef, useState } from 'react'
 import ProfileModal from './profileModal';
@@ -16,6 +16,7 @@ import { UserSchema } from './GroupChatModal';
 import { ColorModeToggler } from '../DarkMode/ColorModeToggler';
 import { getSender } from '../../chatLogics/chatLogic';
 import theme from '../DarkMode/theme';
+import { messageSchema } from '../../recoil/GlobalStates';
 
 function SideDrawer() {
     const setSelectedChat = useSetRecoilState(selectedChatState);
@@ -25,7 +26,7 @@ function SideDrawer() {
     const [searchResult, setSearchResult] = useState<UserSchema[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingChat, setLoadingChat] = useState<boolean>();
-    const notification = useRecoilValue(notificationState);
+    const [notification, setNotification] = useRecoilState(notificationState);
     const { isOpen, onOpen, onClose } = useDisclosure()
     const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -113,6 +114,12 @@ function SideDrawer() {
             });
         }
     };
+
+    const handleNotification = (notif: messageSchema) => {
+        setNotification(notification.filter((n) => n.chat._id !== notif.chat._id));
+    }
+
+    console.log('notification', notification);
     const { colorMode } = useColorMode();
     return (
         <Box>
@@ -151,22 +158,57 @@ function SideDrawer() {
                             mr={2}
                         >
                             <BellIcon
-                                fontSize='2xl' margin={1}
+                                fontSize='2xl'
                             />
+                            {notification.length > 0 && (
+                                <Badge
+                                    borderRadius="full"
+                                    bg='red'
+                                    fontSize="0.8em"
+                                    color='white'
+                                    ml={-1}
+                                    mt={-1}
+                                >
+                                    {notification.length}
+                                </Badge>
+                            )}
                         </MenuButton>
-                        <MenuList>
-                            {!notification.length && "No New Messages"}
-                            {notification.map((notf) => {
-                                const notif = JSON.parse(notf)
-                                console.log(notif);
+                        <MenuList
+                            bg={colorMode === 'dark' ? theme.colors.dark.foreground : theme.colors.light.background}
+                            display='flex'
+                            flexDirection='column'
+                            alignItems='start'
+                            // justifyContent='space-between'
+                            height={notification.length > 0 ? 300 : 10}
+                            overflowY='scroll'
+                        >
+                            {!notification.length && <span style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>No New Messages</span>}
+                            {notification.map((notif) => {
                                 return (
-                                    <MenuList key={notif._id}>
+                                    <MenuItem
+                                        key={JSON.stringify(notif._id)}
+                                        bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.foreground}
+                                        _hover={{ bg: "teal.600" }}
+                                        _focus={{ boxShadow: "outline" }}
+                                        cursor={'pointer'}
+                                        mt={2}
+                                        onClick={() => {
+                                            setSelectedChat(notif.chat);
+                                            handleNotification(notif);
+                                        }}
+                                        borderRadius={10}
+                                        padding={3}
+                                    >
                                         {
                                             notif.chat.isGroup ?
-                                                `New Message in ${notif.chat.chatName}`
-                                                : `New Message from ${getSender(user, notif.chat.users)}`
+                                                <span>
+                                                    New Message in Group <span>{notif.chat.chatName}</span>
+                                                </span>
+                                                : <span>
+                                                    New Message from <span style={{ color: '#66f859' }}>{getSender(user, (notif.chat.users)!)}</span>
+                                                </span>
                                         }
-                                    </MenuList>
+                                    </MenuItem>
                                 )
                             })}
                         </MenuList>
@@ -191,7 +233,8 @@ function SideDrawer() {
                                 <MenuItem bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
                                     _hover={{ bg: "teal.600" }}
                                     _focus={{ boxShadow: "outline" }}
-                                >My Profile</MenuItem>
+                                >My Profile
+                                </MenuItem>
                             </ProfileModal>
                             <MenuDivider />
                             <MenuItem bg={colorMode === 'dark' ? theme.colors.dark.background : theme.colors.light.background}
