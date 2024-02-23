@@ -44,7 +44,7 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
             };
 
             const { data } = await axiosClient.get("/api/chat", config);
-            console.log('mychat', data);
+            // console.log('mychat', data);
             setChats(data);
         } catch (error) {
             toast({
@@ -63,7 +63,7 @@ const MyChats: React.FC<MyChatsProps> = ({ fetchAgain }) => {
         fetchChats();
     }, [fetchAgain]);
 
-    console.log('selected chat from my chats', selectedChat);
+    // console.log('selected chat from my chats', selectedChat);
     const { colorMode } = useColorMode();
 
     return (

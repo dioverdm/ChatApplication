@@ -110,7 +110,7 @@ export const createGroupChat = async (req: newRequest, res: Response) => {
         // console.log(fullGroupChat);
         res.status(200).json(fullGroupChat);
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         return res.send((error as Error).message);
     }
 };

@@ -50,7 +50,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
     }, []);
 
     const fetchMessages = async () => {
-        console.log(selectedChat);
+        // console.log(selectedChat);
         if (!selectedChat || Object.keys(selectedChat).length === 0) return;
 
         try {
@@ -123,7 +123,7 @@ const SingleChat: React.FC<MyChatsProps> = ({ fetchAgain, setFetchAgain }) => {
 
     useEffect(() => {
         socket.on("message received", (newMessageRecieved) => {
-            console.log(newMessageRecieved);
+            // console.log(newMessageRecieved);
             if (
                 !selectedChatCompare || // if chat is not selected or doesn't match current chat
                 selectedChatCompare._id !== newMessageRecieved.chat._id

@@ -2,7 +2,7 @@ import { BellIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import {
     Box, Button, Tooltip, Text, Menu, MenuButton, MenuList,
     MenuItem, MenuDivider, Avatar, Drawer, DrawerOverlay, DrawerContent, DrawerCloseButton,
-    DrawerHeader, DrawerBody, Input, DrawerFooter, useDisclosure, useToast, Spinner, useColorMode, Badge, Flex
+    DrawerHeader, DrawerBody, Input, DrawerFooter, useDisclosure, useToast, Spinner, useColorMode, Badge
 } from '@chakra-ui/react';
 import { useRef, useState } from 'react'
 import ProfileModal from './profileModal';
@@ -119,7 +119,7 @@ function SideDrawer() {
         setNotification(notification.filter((n) => n.chat._id !== notif.chat._id));
     }
 
-    console.log('notification', notification);
+    // console.log('notification', notification);
     const { colorMode } = useColorMode();
     return (
         <Box>

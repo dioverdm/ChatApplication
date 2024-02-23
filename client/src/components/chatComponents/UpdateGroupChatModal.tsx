@@ -65,7 +65,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({ fetchMessages, fetchAgai
                 },
             };
             const { data } = await axiosClient.get(`/api/auth/user?search=${search}`, config);
-            console.log('data', data);
+            // console.log('data', data);
             setLoading(false);
             setSearchResult(data);
         } catch (error) {
@@ -100,7 +100,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({ fetchMessages, fetchAgai
                 config
             );
 
-            console.log(data._id);
+            // console.log(data._id);
             setSelectedChat(data);
             setFetchAgain(!fetchAgain);
             setRenameLoading(false);
@@ -118,7 +118,7 @@ const UpdateGroupChatModal: React.FC<MyChatsProps> = ({ fetchMessages, fetchAgai
         setGroupChatName("");
     };
 
-    console.log(selectedChat);
+    // console.log(selectedChat);
     const handleAddUser = async (user1: UserSchema) => {
         if (selectedChat && selectedChat.users!.find((u: UserSchema) => u._id === user1._id)) {
             toast({
