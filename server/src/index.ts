@@ -89,16 +89,20 @@ io.on('connection', (socket) => {
         // console.log('user disconnected');
     });
 });
-// const dirname = function (){
-//     return __dirname;
-// }
 
-// const webappBuildPath = './../../client/dist';
-// app.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
-// app.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
-// app.get('*', (_, res) => {
-//     res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
-// });
+
+//deployment
+const dirname = function (){
+    return __dirname;
+}
+
+const webappBuildPath = './../../client/dist';
+app.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
+app.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+app.get('*', (_, res) => {
+    res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+});
+//
 
 httpServer.listen(PORT, () => {
     console.log(`server running on port ${PORT}`);

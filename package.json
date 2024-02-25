@@ -1,23 +1,13 @@
 {
-    "dependencies": {
-        "tsc": "^2.0.4",
-        "typescript": "^5.3.3"
-    },
     "name": "server",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "server/dist/index.js",
     "scripts": {
         "install": "cd client && npm i && cd ../server && npm i",
-        "build-client": "cd client && npm run build",
-        "build-server": "cd server",
-        "build": "npm run build-client && npm run build-server",
-        "start": "node server/dist/index.js",
-        "both": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\""
+        "build": "cd client && npm run build && cd ../server && npm run build",
+        "start": "node server/dist/index.js"
     },
     "author": "",
     "license": "ISC",
-    "description": "",
-    "devDependencies": {
-        "concurrently": "^8.2.2"
-    }
+    "description": ""
 }
