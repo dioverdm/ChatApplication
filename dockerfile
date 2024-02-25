@@ -11,14 +11,23 @@ RUN npm cache clean --force \
 
 
 WORKDIR /app
+RUN mkdir client
+RUN mkdir server
 
-COPY . .
+COPY client/package*.json /app/client
+COPY server/package*.json /app/server
+COPY client/tsconfig*.json /app/client
+COPY server/tsconfig*.json /app/server
+COPY package*.json /app
 
 RUN npm install
 
+COPY client /app/client
+COPY server /app/server
+COPY . .
+
 RUN npm run build
 
+CMD ["npm", "start"]
 
 EXPOSE 4000
-
-CMD [ "npm", "run", "start" ]
