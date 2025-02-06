@@ -20,7 +20,7 @@ cloudinary.config({
 });
 
 const app = express();
-const origin = 'http://localhost:5173';
+const origin = 'https://losdetolpa.vercel.app';
 
 //Middlewares
 app.use(morgan('common'));
@@ -43,7 +43,7 @@ const httpServer = createServer(app);
 const io = new SocketIO(httpServer, {
     pingTimeout: 60000,
     cors: {
-        origin: 'http://localhost:5173',
+        origin: 'https://losdetolpa.vercel.app',
     }
 });
 
